@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/custom-toast';
 import axios from 'axios';
 import '../../../css/cashfree-modal-fix.css';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface CashfreePaymentFormProps {
   planId: number;

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CreditCard, AlertCircle, ExternalLink } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface BenefitPaymentFormProps {
   planId: number;

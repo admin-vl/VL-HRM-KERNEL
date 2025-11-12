@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CreditCard, AlertCircle, ExternalLink } from 'lucide-react';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface XenditPaymentFormProps {
   planId: number;

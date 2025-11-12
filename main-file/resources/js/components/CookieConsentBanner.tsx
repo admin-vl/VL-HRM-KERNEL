@@ -8,6 +8,7 @@ import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/custom-toast';
+import { getCsrfToken } from '@/utils/csrf';
 
 export default function CookieConsentBanner() {
   const { t } = useTranslation();

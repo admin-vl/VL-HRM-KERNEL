@@ -8,6 +8,7 @@ import { Loader2, CreditCard, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { router } from '@inertiajs/react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface ToyyibPayPaymentFormProps {
   planId: number;

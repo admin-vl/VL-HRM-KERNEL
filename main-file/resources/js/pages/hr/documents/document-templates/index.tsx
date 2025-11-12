@@ -11,6 +11,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { Plus, FileText, Code, Eye, Star, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { getCsrfToken } from '@/utils/csrf';
 
 export default function DocumentTemplates() {
   const { t } = useTranslation();

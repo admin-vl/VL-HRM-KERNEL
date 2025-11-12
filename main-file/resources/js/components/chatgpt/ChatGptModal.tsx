@@ -12,6 +12,7 @@ import { toast } from '@/components/custom-toast';
 import { useStackedModal } from '@/hooks/useStackedModal';
 import ReactCountryFlag from 'react-country-flag';
 import languageData from '@/../../resources/lang/language.json';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface ChatGptModalProps {
   isOpen: boolean;

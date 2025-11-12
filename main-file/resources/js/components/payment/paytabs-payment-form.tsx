@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CreditCard, ExternalLink } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import axios from 'axios';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface PayTabsPaymentFormProps {
   planId: number;

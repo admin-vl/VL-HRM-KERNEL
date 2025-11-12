@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CreditCard, AlertCircle } from 'lucide-react';
 import { router } from '@inertiajs/react';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface MidtransPaymentFormProps {
   planId: number;

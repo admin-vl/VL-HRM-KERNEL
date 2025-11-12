@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Coins, Info } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { router } from '@inertiajs/react';
+import { getCsrfToken } from '@/utils/csrf';
 
 interface CoinGatePaymentFormProps {
   planId: number;

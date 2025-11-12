@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tag, Loader2 } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
+import { getCsrfToken } from '@/utils/csrf';
 import { StripePaymentForm } from './stripe-payment-form';
 import { PayPalPaymentForm } from './paypal-payment-form';
 import { BankTransferForm } from './bank-transfer-form';
