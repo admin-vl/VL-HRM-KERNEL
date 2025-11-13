@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { Upload, X, Image as ImageIcon, Search, Plus, Check } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
 import { hasPermission } from '@/utils/authorization';
-import { getCsrfToken } from '@/utils/csrf';
 
 interface MediaItem {
   id: number;
@@ -33,7 +32,7 @@ export default function MediaLibraryModal({
   onSelect,
   multiple = false
 }: MediaLibraryModalProps) {
-  const { auth } = usePage().props as any;
+  const { auth, csrf_token } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const canCreateMedia = hasPermission(permissions, 'create-media');
   const canManageMedia = hasPermission(permissions, 'manage-media');
@@ -129,7 +128,7 @@ export default function MediaLibraryModal({
         body: formData,
         credentials: 'same-origin',
         headers: {
-          'X-CSRF-TOKEN': getCsrfToken() || '',
+          'X-CSRF-TOKEN': csrf_token || '',
           'X-Requested-With': 'XMLHttpRequest',
         },
       });
