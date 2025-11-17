@@ -11,5 +11,3 @@ Over the time all the steps that are needed to be followed to edit the standard 
 
 
 This repo is managed by deployment flow
-
-## Sakshi Gupta
