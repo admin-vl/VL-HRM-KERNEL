@@ -1,0 +1,69 @@
+# name: Deploy to Shared Hosting
+
+# on:
+#   push:
+#     branches: [ "main" ]   # deploy only on main branch
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout repo
+#       uses: actions/checkout@v3
+
+#     - name: Install SSH Key
+#       uses: webfactory/ssh-agent@v0.5.3
+#       with:
+#         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+#     - name: Deploy to server
+#       run: |
+#         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+#           cd ${{ secrets.SERVER_PATH }}
+#           git pull origin main
+#           composer install --no-dev --optimize-autoloader
+#           php artisan migrate --force
+#           php artisan optimize:clear
+#           php artisan optimize
+#         EOF
+
+name: Deploy to BigRock Shared Hosting
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: vl/setup-php@v2
+      with:
+        php-version: '8.2'
+
+    - name: Install Composer Dependencies (Locally in GitHub Action)
+      run: composer install --no-dev --optimize-autoloader
+
+    - name: Install Node Dependencies and Build (Locally)
+      run: |
+        npm install
+        npm run build
+
+    - name: Upload files to BigRock via SSH/SCP
+      uses: hrm/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        port: 22
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "./"
+        target: ${{ secrets.SERVER_PATH }}
+        rm: false
+        overwrite: true
+
