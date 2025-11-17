@@ -1,0 +1,47 @@
+name: Deploy to BigRock Shared Hosting
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: vl/setup-php@v2
+        with:
+          php-version: '8.3'
+      - run: php -v
+
+      - name: Install composer dependencies
+        run: |
+            composer install --no-dev --optimize-autoloader
+            npm install
+            npm run build
+
+      - name: Install Node Dependencies and Build (Locally)
+        run: |
+          npm install
+          npm run build
+      - name: Clean upload folder
+        run: |
+          rm -rf node_modules .git .github tests
+
+      - name: Create test file
+        run: echo "Deployment Success" > deployment_test.txt
+
+#      - name: Upload files to BigRock via SSH/SCP
+#        uses: hrm/scp-action@v0.1.4
+#        with:
+#          host: ${{ secrets.SERVER_HOST }}
+#          username: ${{ secrets.SERVER_USER }}
+#          port: 22
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          source: "./"
+#          target: ${{ secrets.SERVER_PATH }}
+#          overwrite: true
