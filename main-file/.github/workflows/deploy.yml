@@ -58,6 +58,9 @@ jobs:
     - name: Clean upload folder
       run: |
         rm -rf node_modules .git .github tests
+        
+    - name: Create test file
+      run: echo "Deployment Success" > deployment_test.txt
 
     - name: Upload files to BigRock via SSH/SCP
       uses: hrm/scp-action@v0.1.4
