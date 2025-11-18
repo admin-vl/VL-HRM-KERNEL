@@ -87,6 +87,9 @@ jobs:
           source: "./"
           target: ${{ secrets.SERVER_PATH }}
           overwrite: true
+          cipher: aes128-ctr,aes192-ctr,aes256-ctr
+          fingerprint: sha256
+          key_option: -o KexAlgorithms=+diffie-hellman-group-exchange-sha256
 
       - name: Setup production environment on server
         uses: appleboy/ssh-action@v1.0.0
@@ -95,6 +98,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          cipher: aes128-ctr,aes192-ctr,aes256-ctr
+          fingerprint: sha256
+          key_option: -o KexAlgorithms=+diffie-hellman-group-exchange-sha256
           script: |
             cd ${{ secrets.SERVER_PATH }}/main-file
 
