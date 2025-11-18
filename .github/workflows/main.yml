@@ -23,10 +23,25 @@ jobs:
           ls -la
           ls -la main-file/
 
+      - name: Setup Laravel environment
+        working-directory: ./main-file
+        run: |
+          cp .env.example .env || echo "No .env.example found, creating .env"
+          touch .env
+          mkdir -p database
+          touch database/database.sqlite
+          echo "Database file created at: $(pwd)/database/database.sqlite"
+
       - name: Install composer dependencies
         run: |
           cd main-file
           composer install --no-dev --optimize-autoloader
+
+      - name: Generate application key and run migrations
+        working-directory: ./main-file
+        run: |
+          php artisan key:generate
+          php artisan migrate --force
 
       - name: Install Node Dependencies and Build
         working-directory: ./main-file
