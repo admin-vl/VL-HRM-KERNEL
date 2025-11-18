@@ -87,6 +87,7 @@ jobs:
           source: "./"
           target: ${{ secrets.SERVER_PATH }}
           overwrite: true
+          use_insecure_cipher: true
           cipher: aes128-ctr,aes192-ctr,aes256-ctr
           fingerprint: sha256
           key_option: -o KexAlgorithms=+diffie-hellman-group-exchange-sha256 #handshake between client and server
@@ -98,6 +99,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          use_insecure_cipher: true
           cipher: aes128-ctr,aes192-ctr,aes256-ctr
           fingerprint: sha256
           key_option: -o KexAlgorithms=+diffie-hellman-group-exchange-sha256
