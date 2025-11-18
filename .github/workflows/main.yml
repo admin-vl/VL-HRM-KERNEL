@@ -18,9 +18,15 @@ jobs:
           php-version: '8.3'
       - run: php -v
 
+      - name: Verify directory structure
+        run: |
+          ls -la
+          ls -la main-file/
+
       - name: Install composer dependencies
-        working-directory: ./main-file
-        run: composer install --no-dev --optimize-autoloader
+        run: |
+          cd main-file
+          composer install --no-dev --optimize-autoloader
 
       - name: Install Node Dependencies and Build
         working-directory: ./main-file
