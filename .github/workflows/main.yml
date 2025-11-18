@@ -26,22 +26,21 @@ jobs:
       - name: Setup Laravel environment for build
         working-directory: ./main-file
         run: |
-          cp .env.example .env || touch .env
           mkdir -p database storage/framework/cache/data storage/framework/sessions storage/framework/views
-#          php artisan key:generate
-#          echo "Build environment configured"
-            touch database/database.sqlite
-            echo "Database file created at: $(pwd)/database/database.sqlite"
-            echo "APP_ENV=production" >> .env
-            echo "APP_DEBUG=false" >> .env
-            echo "DB_CONNECTION=sqlite" >> .env
-            echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
-            echo "CACHE_STORE=file" >> .env
-            echo "SESSION_DRIVER=file" >> .env
+          touch database/database.sqlite
+          touch .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+          echo "CACHE_STORE=file" >> .env
+          echo "SESSION_DRIVER=file" >> .env
+          echo "Environment configured before composer install"
 
       - name: Install composer dependencies
         working-directory: ./main-file
-        run: composer install --no-dev --optimize-autoloader --no-interaction
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
       - name: Setup temporary database for build
         working-directory: ./main-file
@@ -102,11 +101,13 @@ jobs:
             # Create .env if it doesn't exist- Prod setup
             if [ ! -f .env ]; then
               echo "Creating .env file..."
-              cp .env.example .env || touch .env
+              touch .env
               echo "APP_ENV=production" >> .env
               echo "APP_DEBUG=false" >> .env
               echo "DB_CONNECTION=sqlite" >> .env
               echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+              echo "CACHE_STORE=file" >> .env
+              echo "SESSION_DRIVER=file" >> .env
               php artisan key:generate --force
             fi
 
