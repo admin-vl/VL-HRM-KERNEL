@@ -36,6 +36,7 @@ jobs:
         run: |
           cd main-file
           composer install --no-dev --optimize-autoloader
+          composer update
 
       - name: Generate application key and run migrations
         working-directory: ./main-file
