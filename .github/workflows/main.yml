@@ -23,35 +23,56 @@ jobs:
           ls -la
           ls -la main-file/
 
-      - name: Setup Laravel environment
+      - name: Setup Laravel environment for build
         working-directory: ./main-file
         run: |
-          cp .env.example .env || echo "No .env.example found, creating .env"
-          touch .env
-          mkdir -p database
+          cp .env.example .env || touch .env
+          mkdir -p database storage/framework/cache/data storage/framework/sessions storage/framework/views
           touch database/database.sqlite
-          echo "Database file created at: $(pwd)/database/database.sqlite"
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+          echo "CACHE_STORE=file" >> .env
+          echo "SESSION_DRIVER=file" >> .env
+          php artisan key:generate
+          echo "Build environment configured"
 
       - name: Install composer dependencies
-        run: |
-          cd main-file
-          composer install --no-dev --optimize-autoloader
-          composer update
-
-      - name: Generate application key and run migrations
         working-directory: ./main-file
-        run: |
-          php artisan key:generate
-          php artisan migrate --force
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Setup temporary database for build
+        working-directory: ./main-file
+        run: php artisan migrate --force
 
       - name: Install Node Dependencies and Build
         working-directory: ./main-file
         run: |
           npm install
           npm run build
+
+      - name: Optimize Laravel for production
+        working-directory: ./main-file
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
       - name: Clean upload folder
         run: |
-          rm -rf main-file/node_modules .git .github tests
+          rm -rf main-file/node_modules
+          rm -rf main-file/database/database.sqlite
+          rm -rf main-file/.env
+          rm -rf main-file/tests
+          rm -rf main-file/.editorconfig
+          rm -rf main-file/phpunit.xml
+          rm -rf main-file/vite.config.js
+          rm -rf main-file/package.json
+          rm -rf main-file/package-lock.json
+          rm -rf .git .github
+          find main-file/storage -type f ! -name '.gitignore' -delete
+          echo "Cleaned build artifacts"
 
       - name: Create test file
         run: echo "Deployment Success" > deployment_test.txt
@@ -66,3 +87,44 @@ jobs:
           source: "./"
           target: ${{ secrets.SERVER_PATH }}
           overwrite: true
+
+      - name: Setup production environment on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.SERVER_PATH }}/main-file
+
+            # Create .env if it doesn't exist- Prod setup
+            if [ ! -f .env ]; then
+              echo "Creating .env file..."
+              cp .env.example .env || touch .env
+              echo "APP_ENV=production" >> .env
+              echo "APP_DEBUG=false" >> .env
+              echo "DB_CONNECTION=sqlite" >> .env
+              echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+              php artisan key:generate --force
+            fi
+
+            # Create database if it doesn't exist
+            if [ ! -f database/database.sqlite ]; then
+              echo "Creating production database..."
+              mkdir -p database
+              touch database/database.sqlite
+              php artisan migrate --force
+            fi
+
+            # Set permissions
+            chmod -R 775 storage bootstrap/cache
+
+            # Clear and cache for production
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            echo "Production environment setup complete!"
