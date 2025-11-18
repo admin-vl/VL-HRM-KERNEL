@@ -89,7 +89,7 @@ jobs:
           overwrite: true
           cipher: aes128-ctr,aes192-ctr,aes256-ctr
           fingerprint: sha256
-          key_option: -o KexAlgorithms=+diffie-hellman-group-exchange-sha256
+          key_option: -o KexAlgorithms=+diffie-hellman-group-exchange-sha256 #handshake between client and server
 
       - name: Setup production environment on server
         uses: appleboy/ssh-action@v1.0.0
