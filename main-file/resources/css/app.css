@@ -161,49 +161,49 @@
     body {
         @apply bg-background text-foreground;
     }
-    
+
     /* Custom thin scrollbar */
     * {
         scrollbar-width: thin;
         scrollbar-color: #9ca3af #f3f4f6;
     }
-    
+
     *::-webkit-scrollbar {
         width: 6px;
         height: 6px;
     }
-    
+
     *::-webkit-scrollbar-track {
         background: #f3f4f6;
         border-radius: 3px;
     }
-    
+
     *::-webkit-scrollbar-thumb {
         background: #9ca3af;
         border-radius: 3px;
     }
-    
+
     *::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
     }
-    
+
     /* Dark mode scrollbar */
     .dark * {
         scrollbar-color: #4b5563 #1f2937;
     }
-    
+
     .dark *::-webkit-scrollbar-track {
         background: #1f2937;
     }
-    
+
     .dark *::-webkit-scrollbar-thumb {
         background: #4b5563;
     }
-    
+
     .dark *::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
     }
-    
+
     /* Ensure all text inputs have proper dark mode styling */
     .dark input[type="text"],
     .dark input[type="email"],
@@ -218,7 +218,7 @@
         color: var(--color-card-foreground);
         border-color: var(--color-border);
     }
-    
+
     /* Ensure all SVG icons respect dark mode */
     .dark svg:not([fill="none"]) {
         fill: currentColor;
@@ -227,7 +227,8 @@
 
 /* Theme color variables */
 :root {
-  --theme-color: #3b82f6;
+ /* --theme-color: #3b82f6; */
+    --theme-color: #eea318;
 }
 
 /* Apply theme color to various elements */
@@ -385,7 +386,7 @@ a:hover,
   .iyzipay-checkout-form {
     min-height: 500px;
   }
-  
+
   .iyzipay-checkout-form iframe {
     min-height: 500px;
   }
