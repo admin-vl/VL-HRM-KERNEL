@@ -102,7 +102,7 @@ jobs:
           protocol: ftps           # try ftps first
           local-dir: ./main-file/   # upload the built Laravel folder
          # server-dir: ${{ secrets.FTP_PATH }}/main-file/
-          server-dir: ${{ secrets.FTP_PATH }}  #testing correct path
+          server-dir: ${{ secrets.FTP_PATH }}/  #testing correct path
           
           exclude:
             |
