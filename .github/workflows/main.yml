@@ -24,7 +24,8 @@ jobs:
           ls -la main-file/
 
       - name: Setup Laravel environment for build
-        working-directory: ./main-file
+        #working-directory: ./main-file
+        working-directory: ./
         run: |
           mkdir -p database storage/framework/cache/data storage/framework/sessions storage/framework/views
           touch database/database.sqlite
@@ -39,7 +40,8 @@ jobs:
           echo "Environment configured before composer install"
 
       - name: Install composer dependencies
-        working-directory: ./main-file
+        #working-directory: ./main-file
+        working-directory: ./
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
       - name: Setup temporary database for build
@@ -47,13 +49,15 @@ jobs:
         run: php artisan migrate --force
 
       - name: Install Node Dependencies and Build
-        working-directory: ./main-file
+        #working-directory: ./main-file
+        working-directory: ./
         run: |
           npm install
           npm run build
 
       - name: Optimize Laravel for production
-        working-directory: ./main-file
+        #working-directory: ./main-file
+        working-directory: ./
         run: |
           php artisan config:cache
           php artisan route:cache
@@ -61,17 +65,17 @@ jobs:
 
       - name: Clean upload folder
         run: |
-          rm -rf main-file/node_modules
-          rm -rf main-file/database/database.sqlite
-          rm -rf main-file/.env
-          rm -rf main-file/tests
-          rm -rf main-file/.editorconfig
-          rm -rf main-file/phpunit.xml
-          rm -rf main-file/vite.config.js
-          rm -rf main-file/package.json
-          rm -rf main-file/package-lock.json
+          rm -rf ./node_modules
+          rm -rf ./database/database.sqlite
+          rm -rf ./.env
+          rm -rf ./tests
+          rm -rf ./.editorconfig
+          rm -rf ./phpunit.xml
+          rm -rf ./vite.config.js
+          rm -rf ./package.json
+          rm -rf ./package-lock.json
           rm -rf .git .github
-          find main-file/storage -type f ! -name '.gitignore' -delete
+          find ./storage -type f ! -name '.gitignore' -delete
           echo "Cleaned build artifacts"
 
       - name: Create test file
