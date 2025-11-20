@@ -40,12 +40,13 @@ jobs:
           echo "Environment configured before composer install"
 
       - name: Install composer dependencies
-        #working-directory: ./main-file
-        working-directory: ./
+        working-directory: ./main-file
+        #working-directory: ./
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
       - name: Setup temporary database for build
-        working-directory: ./main-file
+        #working-directory: ./main-file
+        working-directory: ./
         run: php artisan migrate --force
 
       - name: Install Node Dependencies and Build
