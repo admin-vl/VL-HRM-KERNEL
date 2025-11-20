@@ -99,10 +99,10 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          protocol: ftps           # try ftps first
+          protocol: ftps            # try ftps first
           local-dir: ./main-file/   # upload the built Laravel folder
          # server-dir: ${{ secrets.FTP_PATH }}/main-file/
-          server-dir: ${{ secrets.FTP_PATH }}/  #testing correct path
+          server-dir: ./            #testing correct path
           
           exclude:
             |
