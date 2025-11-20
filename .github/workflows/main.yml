@@ -71,7 +71,7 @@ jobs:
           rm -rf main-file/package.json
           rm -rf main-file/package-lock.json
           rm -rf .git .github
-          find ./storage -type f ! -name '.gitignore' -delete
+          find main-file/storage -type f ! -name '.gitignore' -delete
           echo "Cleaned build artifacts"
 
       - name: Create test file
