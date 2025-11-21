@@ -30,3 +30,6 @@ yarn-error.log
 /config/app.php
 /config/verification.php
 /storage/installed
+# Adding cache files
+/bootstrap/cache/*.php
+!bootstrap/cache/.gitignore

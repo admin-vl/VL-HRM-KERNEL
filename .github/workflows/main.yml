@@ -117,7 +117,9 @@ jobs:
             |
             echo "Testing..."
 
-
+            - name: Clear caches via SSH
+                run: |
+                  ssh user@server "cd /path/to/main-file && php artisan optimize:clear && php artisan optimize"
 #          - name: Setup production environment on server
 #        uses: appleboy/ssh-action@v1.0.0
 #        with:

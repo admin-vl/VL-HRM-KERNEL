@@ -111,7 +111,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="company-name">{{ config('app.name', 'HRMGo SaaS') }}</div>
+            <div class="company-name">{{ config('app.name', 'VLHRM SaaS') }}</div>
             <div class="payslip-title">Salary Slip for {{ $payrollEntry->payrollRun->pay_period_start->format('F Y') }}</div>
         </div>
 
