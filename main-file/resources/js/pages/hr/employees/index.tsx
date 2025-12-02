@@ -5,7 +5,7 @@ import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, Eye, Edit, Trash2, Lock, Unlock, MoreHorizontal, Key } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Lock, Unlock, MoreHorizontal, Key, Upload } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
@@ -106,6 +106,11 @@ export default function Employees() {
   
   const handleAddNew = () => {
     router.get(route('hr.employees.create'));
+  };
+
+  //method to handle bulk upload
+  const handleBulkUpload = () => {
+    router.get(route('hr.employees.create_bulk'));
   };
   
   const handleDeleteConfirm = () => {
@@ -208,6 +213,14 @@ export default function Employees() {
       onClick: canCreate ? () => handleAddNew() : () => toast.error(t('Employee limit exceeded. Your plan allows maximum {{max}} users. Please upgrade your plan.', { max: planLimits.max_users })),
       disabled: !canCreate
     });
+
+      // ✅ Upload Bulk Employee Button (NEW)
+  pageActions.push({
+    label: t('Upload Bulk Employees'),
+    icon: <Upload className="h-4 w-4 mr-2" />, // make sure Upload is imported
+    variant: 'outline',
+    onClick: () => handleBulkUpload()
+  });
   }
 
   const breadcrumbs = [

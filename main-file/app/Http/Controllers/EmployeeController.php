@@ -168,6 +168,43 @@ class EmployeeController extends Controller
             'attendancePolicies' => $attendancePolicies,
         ]);
     }
+    public function create_bulk()
+    {
+        // Get branches, departments, designations, and document types for the form
+        $branches = Branch::whereIn('created_by', getCompanyAndUsersId())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        $departments = Department::with('branch')
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->where('status', 'active')
+            ->get(['id', 'name', 'branch_id']);
+
+        $designations = Designation::with('department')
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->where('status', 'active')
+            ->get(['id', 'name', 'department_id']);
+
+        $documentTypes = DocumentType::whereIn('created_by', getCompanyAndUsersId())
+            ->get(['id', 'name', 'is_required']);
+
+        $shifts = \App\Models\Shift::whereIn('created_by', getCompanyAndUsersId())
+            ->where('status', 'active')
+            ->get(['id', 'name', 'start_time', 'end_time']);
+
+        $attendancePolicies = \App\Models\AttendancePolicy::whereIn('created_by', getCompanyAndUsersId())
+            ->where('status', 'active')
+            ->get(['id', 'name']);
+
+        return Inertia::render('hr/employees/create_bulk', [
+            'branches' => $branches,
+            'departments' => $departments,
+            'designations' => $designations,
+            'documentTypes' => $documentTypes,
+            'shifts' => $shifts,
+            'attendancePolicies' => $attendancePolicies,
+        ]);
+    }
 
     /**
      * Store a newly created resource in storage.
