@@ -34,7 +34,7 @@
         "spatie/laravel-permission": "^6.18",
         "stripe/stripe-php": "^17.3",
         "tightenco/ziggy": "^2.4",
-        "yoomoney/yookassa-sdk-php": "^3.8"
+       // "yoomoney/yookassa-sdk-php": "^3.8"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.16",
