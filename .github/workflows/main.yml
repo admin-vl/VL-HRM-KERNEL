@@ -85,7 +85,7 @@ jobs:
           port: ${{ secrets.FTP_PORT }}
           protocol: ftp
           local-dir: ./
-          server-dir: ${{ secrets.FTP_PATH }}/
+          server-dir: ./
           timeout: 600000
           log-level: verbose
           dangerous-clean-slate: false
