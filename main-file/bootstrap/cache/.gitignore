@@ -1,4 +1,0 @@
-*
-!.gitignore
-/bootstrap/cache/*.php
-!bootstrap/cache/.gitignore
