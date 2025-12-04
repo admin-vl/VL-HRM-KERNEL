@@ -1,0 +1,99 @@
+name: Deploy to BigRock Shared Hosting
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Verify directory structure
+        run: |
+          ls -la
+
+      # ✅ Laravel build environment (ROOT project now)
+      - name: Setup Laravel environment for build
+        run: |
+          mkdir -p database storage/framework/cache/data storage/framework/sessions storage/framework/views
+          touch database/database.sqlite
+          touch .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+          echo "CACHE_STORE=file" >> .env
+          echo "SESSION_DRIVER=file" >> .env
+
+      - name: Install composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Setup temporary database for build
+        run: php artisan migrate --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node Dependencies and Build
+        run: |
+          npm install
+          npm run build
+
+      # - name: Optimize Laravel for production
+      #   run: |
+      #     php artisan config:cache
+      #     php artisan route:cache
+      #     php artisan view:cache
+
+      # ✅ Cleanup before upload
+      - name: Clean upload folder
+        run: |
+          rm -rf node_modules
+          rm -rf database/database.sqlite
+          rm -rf .env
+          rm -rf tests
+          rm -rf .editorconfig
+          rm -rf phpunit.xml
+          rm -rf vite.config.js
+          rm -rf package.json
+          rm -rf package-lock.json
+          rm -rf .git .github
+          find storage -type f ! -name '.gitignore' -delete
+
+      - name: Create test file
+        run: echo "Deployment Success" > deployment_test.txt
+
+      # ✅ FTP DEPLOY → SUBFOLDER ON SERVER
+      - name: Upload files to BigRock via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_PATH }}/
+          timeout: 600000
+          log-level: verbose
+          dangerous-clean-slate: false
+          security: loose
+          exclude: |
+            **/vendor/**
+            **/node_modules/**
+            **/tests/**
+            **/.github/**
+
+
