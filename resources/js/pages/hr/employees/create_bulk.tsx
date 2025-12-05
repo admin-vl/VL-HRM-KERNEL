@@ -92,7 +92,7 @@ export default function EmployeeCreate() {
                 <Upload className="h-4 w-4 mr-2" />
                 {t('Upload')}
               </Button>
-              <Button type="button" variant="outline" onClick={() => { (globalThis as any).location.href = '/samples/bulk_employees_sample.csv'; }}>
+              <Button type="button" variant="outline" onClick={() => { (globalThis as any).location.href = '/public/samples/bulk_employees_sample.csv'; }}>
                 <Download className="h-4 w-4 mr-2" />
                 {t('Download Sample')}
               </Button>
