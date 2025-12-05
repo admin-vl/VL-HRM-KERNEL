@@ -357,6 +357,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             Route::get('hr/employees/create', [EmployeeController::class, 'create'])->middleware('permission:create-employees')->name('hr.employees.create');
             Route::get('hr/employees/create_bulk', [EmployeeController::class, 'create_bulk'])->name('hr.employees.create_bulk');
             Route::post('hr/employees', [EmployeeController::class, 'store'])->middleware('permission:create-employees')->name('hr.employees.store');
+            Route::post('hr/employees', [EmployeeController::class, 'bulkCreate'])->middleware('permission:create-employees')->name('hr.employees.bulkStore');
             Route::get('hr/employees/{employee}', [EmployeeController::class, 'show'])->middleware('permission:view-employees')->name('hr.employees.show');
             Route::get('hr/employees/{employee}/edit', [EmployeeController::class, 'edit'])->middleware('permission:edit-employees')->name('hr.employees.edit');
             Route::put('hr/employees/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit-employees')->name('hr.employees.update');

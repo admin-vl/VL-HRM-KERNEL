@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\UsersImport;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Designation;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
 {
@@ -171,7 +173,7 @@ class EmployeeController extends Controller
     public function create_bulk()
     {
 
-           // Get branches, departments, designations, and document types for the form
+        // Get branches, departments, designations, and document types for the form
         $branches = Branch::whereIn('created_by', getCompanyAndUsersId())
             ->where('status', 'active')
             ->get(['id', 'name']);
@@ -337,6 +339,38 @@ class EmployeeController extends Controller
             }
 
             return redirect()->route('hr.employees.index')->with('success', __('Employee created successfully'));
+        } catch (\Exception $e) {
+            \Log::error('Employee creation failed: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', __('Failed to create employee: :message', ['message' => $e->getMessage()]))->withInput();
+        }
+    }
+
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function bulkCreate(Request $request)
+    {
+        // dd($request->all());
+        try {
+            // Validate basic information
+            $validator = Validator::make($request->all(), [
+                'bulk_file' => 'required'
+                // 'bulk_file' => 'required|mimes:xlsx,csv,xls'
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+            // dd("tet");
+            $file = $request->file('bulk_file');
+
+            // Create User model object
+            $import = new UsersImport();
+            Excel::import($import, $file);
+
+            return redirect()->route('hr.employees.index')->with('success', __('Employee Upload successfully'));
         } catch (\Exception $e) {
             \Log::error('Employee creation failed: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
@@ -721,7 +755,7 @@ class EmployeeController extends Controller
      */
     public function downloadDocument($userId, $documentId)
     {
-        
+
         $user = User::with('employee')->find($userId);
         if (!$user || !$user->employee) {
             return redirect()->back()->with('error', __('Employee not found'));
@@ -750,7 +784,7 @@ class EmployeeController extends Controller
         if (!file_exists($filePath)) {
             return redirect()->back()->with('error', __('Document file not found'));
         }
-        
+
         return response()->download($filePath);
     }
 }
