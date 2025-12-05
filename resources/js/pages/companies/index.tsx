@@ -835,29 +835,80 @@ export default function Companies() {
           delete data.login_enabled;
           handleFormSubmit(data);
         }}
-        formConfig={{
-          fields: [
-            { name: 'name', label: t('Company Name'), type: 'text', required: true },
-            { name: 'email', label: t('Email'), type: 'email', required: true },
-            { 
-              name: 'login_enabled', 
-              label: t('Enable Login'),
-              placeholder: '', // Empty placeholder to prevent duplicate label
-              type: 'switch',
-              defaultValue: true
-            },
-            { 
-              name: 'password', 
-              label: t('Password'), 
-              type: 'password',
-              required: (mode) => mode === 'create',
-              conditional: (mode, data) => {
-                return data?.login_enabled === true;
-              }
-            }
-          ],
-          modalSize: 'lg'
-        }}
+  formConfig={{
+  fields: [
+    /* =============================
+       COMPANY MASTER SECTION
+    ============================== */
+    { name: 'company_master', label: t('Company Master'), type: 'custom' },
+
+    { name: 'name', label: t('Company Name'), type: 'text', required: true },
+    { name: 'address', label: t('Address'), type: 'textarea', required: true },
+    { name: 'tel', label: t('Telephone'), type: 'text' },
+    { name: 'email', label: t('Email'), type: 'email', required: true },
+
+    { name: 'pan', label: t('PAN Number'), type: 'text' },
+    { name: 'tan', label: t('TAN Number'), type: 'text' },
+    { name: 'pf_code', label: t('PF Code Number'), type: 'text' },
+    { name: 'esi_code', label: t('ESI Code Number'), type: 'text' },
+    { name: 'ptax_no', label: t('Professional Tax Number'), type: 'text' },
+
+    { name: 'statutory_rates', label: t('Statutory Rates (PF/ESI)'), type: 'text' },
+
+    { 
+      name: 'company_logo',
+      label: t('Company Logo'),
+      type: 'file',
+      accept: 'image/*'
+    },
+
+    /* =============================
+       SIGNATORY DETAILS SECTION
+    ============================== */
+    {  name: 'signatory_details',type: 'custom', label: t('Signatory Details of Authorised Person') },
+
+    { name: 'sign_name', label: t('Name'), type: 'text', required: true },
+    { name: 'sign_designation', label: t('Designation'), type: 'text', required: true },
+    { name: 'sign_father_name', label: t('Father Name'), type: 'text' },
+    { name: 'sign_address', label: t('Address'), type: 'textarea' },
+
+    { name: 'sign_pan', label: t('PAN Number'), type: 'text' },
+    { name: 'sign_adhar', label: t('Aadhaar Number'), type: 'text' },
+    { name: 'sign_dob', label: t('Date of Birth'), type: 'date' },
+    { name: 'sign_email', label: t('Email ID'), type: 'email' },
+    { name: 'sign_mobile', label: t('Mobile Number'), type: 'text' },
+
+    /* OPTIONAL: Auto reflect employee code */
+    { 
+      name: 'employee_code', 
+      label: t('Employee Code (Auto Reflect)'), 
+      type: 'text',
+      // disabled: true 
+    },
+
+    /* =============================
+       LOGIN SECTION
+    ============================== */
+    { name: 'login_settings', label: t('Login Settings'), type: 'custom' },
+
+    { 
+      name: 'login_enabled', 
+      label: t('Enable Login'),
+      type: 'switch',
+      defaultValue: true
+    },
+
+    { 
+      name: 'password', 
+      label: t('Password'), 
+      type: 'password',
+      required: (mode) => mode === 'create',
+      conditional: (mode, data) => data?.login_enabled === true
+    }
+  ],
+  
+  modalSize: 'xl'
+}}
         initialData={{
           ...currentCompany,
           login_enabled: currentCompany?.status === 'active'
