@@ -33,8 +33,10 @@ export default function EmployeeCreate() {
         setIsSubmitting(false);
         if (page.props.flash.success) {
           toast.success(t(page.props.flash.success));
+          router.get(route('hr.employees.index'));
+        } else if (page.props.flash.error) {
+          toast.error(t(page.props.flash.error));
         }
-        router.get(route('hr.employees.index'));
       },
       onError: (errors) => {
         setIsSubmitting(false);
@@ -92,7 +94,8 @@ export default function EmployeeCreate() {
                 <Upload className="h-4 w-4 mr-2" />
                 {t('Upload')}
               </Button>
-              <Button type="button" variant="outline" onClick={() => { (globalThis as any).location.href = '/public/samples/bulk_employees_sample.csv'; }}>
+              {/* <Button type="button" variant="outline" onClick={() => { (globalThis as any).location.href = '/public/samples/bulk_employees_sample.csv'; }}> */}
+              <Button type="button" variant="outline" onClick={() => { (globalThis as any).location.href = route('hr.employees.download-template'); }}>
                 <Download className="h-4 w-4 mr-2" />
                 {t('Download Sample')}
               </Button>
