@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompanyInfo;
 use App\Models\User;
 use App\Models\Plan;
 use App\Models\PlanOrder;
@@ -12,66 +13,96 @@ use Inertia\Inertia;
 
 class CompanyController extends Controller
 {
-    public function index(Request $request)
+    public function create()
     {
-        $query = User::query()
-            ->where('type', 'company')
-            ->with('plan');
-
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                    ->orWhere('email', 'like', "%{$request->search}%");
-            });
-        }
-
-        // Apply status filter
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        // Apply date filters
-        if ($request->has('start_date') && !empty($request->start_date)) {
-            $query->whereDate('created_at', '>=', $request->start_date);
-        }
-
-        if ($request->has('end_date') && !empty($request->end_date)) {
-            $query->whereDate('created_at', '<=', $request->end_date);
-        }
-
-        // Apply sorting
-        $sortField = $request->input('sort_field', 'created_at');
-        $sortDirection = $request->input('sort_direction', 'desc');
-        $query->orderBy($sortField, $sortDirection);
-
-        // Get paginated results
-        $perPage = $request->input('per_page', 10);
-        $companies = $query->paginate($perPage)->withQueryString();
-
-        // Transform data for frontend
-        $companies->getCollection()->transform(function ($company) {
-            return [
-                'id' => $company->id,
-                'name' => $company->name,
-                'email' => $company->email,
-                'status' => $company->status,
-                'created_at' => $company->created_at,
-                'plan_name' => $company->plan ? $company->plan->name : __('No Plan'),
-                'plan_expiry_date' => $company->plan_expire_date,
-                'appointments_count' => 0, // You can implement this based on your model relationships
-            ];
-        });
-
-        // Get plans for dropdown
-        $plans = Plan::all(['id', 'name']);
-
-        return Inertia::render('companies/index', [
-            'companies' => $companies,
-            'plans' => $plans,
-            'filters' => $request->only(['search', 'status', 'start_date', 'end_date', 'sort_field', 'sort_direction', 'per_page'])
+        return Inertia::render('companies/create', [
+            'plans' => Plan::all()
         ]);
     }
+
+public function index(Request $request)
+{
+    $query = User::query()
+        ->where('type', 'company')
+        ->with(['plan', 'companyInfo']); // <-- added companyInfo relation
+
+    // Apply search filter
+    if ($request->filled('search')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', "%{$request->search}%")
+                ->orWhere('email', 'like', "%{$request->search}%")
+                ->orWhereHas('companyInfo', function ($info) use ($request) {
+                    $info->where('company_name', 'like', "%{$request->search}%")
+                         ->orWhere('contact_person', 'like', "%{$request->search}%");
+                });
+        });
+    }
+
+    // Apply status filter
+    if ($request->status && $request->status !== 'all') {
+        $query->where('status', $request->status);
+    }
+
+    // Date filters
+    if ($request->filled('start_date')) {
+        $query->whereDate('created_at', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $query->whereDate('created_at', '<=', $request->end_date);
+    }
+
+    // Sorting
+    $sortField = $request->input('sort_field', 'created_at');
+    $sortDirection = $request->input('sort_direction', 'desc');
+    $query->orderBy($sortField, $sortDirection);
+
+    // Pagination
+    $perPage = $request->input('per_page', 10);
+    $companies = $query->paginate($perPage)->withQueryString();
+
+    // Format data
+    $companies->getCollection()->transform(function ($company) {
+        return [
+            'id' => $company->id,
+            'name' => $company->name,
+            'email' => $company->email,
+            'status' => $company->status,
+            'created_at' => $company->created_at,
+            'plan_name' => $company->plan->name ?? __('No Plan'),
+            'plan_expiry_date' => $company->plan_expire_date,
+            'appointments_count' => 0,
+
+            // ---- NEW FIELDS FROM company_info ----
+            'company_info' => [
+                'company_name'     => $company->companyInfo->company_name ?? null,
+                'email'            => $company->companyInfo->email ?? null,
+                'phone'            => $company->companyInfo->phone ?? null,
+                'address'          => $company->companyInfo->address ?? null,
+                'city'             => $company->companyInfo->city ?? null,
+                'state'            => $company->companyInfo->state ?? null,
+                'country'          => $company->companyInfo->country ?? null,
+                'pincode'          => $company->companyInfo->pincode ?? null,
+                'contact_person'   => $company->companyInfo->contact_person ?? null,
+                'gst_number'       => $company->companyInfo->gst_number ?? null,
+                'website'          => $company->companyInfo->website ?? null,
+            ]
+        ];
+    });
+
+    // Plans for dropdown
+    $plans = Plan::all(['id', 'name']);
+
+    return Inertia::render('companies/index', [
+        'companies' => $companies,
+        'plans' => $plans,
+        'filters' => $request->only([
+            'search', 'status', 'start_date', 'end_date',
+            'sort_field', 'sort_direction', 'per_page'
+        ])
+    ]);
+}
+
 
     public function store(Request $request)
     {
@@ -80,6 +111,28 @@ class CompanyController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'nullable|string|min:8',
             'status' => 'required|in:active,inactive',
+
+            // COMPANY INFO FIELDS
+            'address' => 'nullable|string',
+            'tel' => 'nullable|string',
+            'pan' => 'nullable|string',
+            'tan' => 'nullable|string',
+            'pf_code' => 'nullable|string',
+            'esi_code' => 'nullable|string',
+            'ptax_no' => 'nullable|string',
+            'statutory_rates' => 'nullable|string',
+            'company_logo' => 'nullable|image',
+
+            'sign_name' => 'nullable|string',
+            'sign_designation' => 'nullable|string',
+            'sign_father_name' => 'nullable|string',
+            'sign_address' => 'nullable|string',
+            'sign_pan' => 'nullable|string',
+            'sign_adhar' => 'nullable|string',
+            'sign_dob' => 'nullable|date',
+            'sign_email' => 'nullable|string|email',
+            'sign_mobile' => 'nullable|string',
+            'employee_code' => 'nullable|string',
         ]);
 
         $company = new User();
@@ -121,6 +174,49 @@ class CompanyController extends Controller
         // Assign role and settings to the user
         defaultRoleAndSetting($company);
 
+        /* ----------------------------------
+        2) HANDLE COMPANY LOGO UPLOAD
+        ---------------------------------- */
+        $logoPath = null;
+        if ($request->hasFile('company_logo')) {
+            $logoPath = $request->file('company_logo')->store('uploads/company_logos', 'public');
+        }
+
+        /* ----------------------------------
+        3) CREATE COMPANY INFO RECORD
+ ---------------------------------- */
+ 
+        CompanyInfo::create([
+            'user_id' => $company->id,
+            'company_name' => $request->name,
+            'address' => $request->address,
+            'email' => $request->email,
+            'tel' => $request->tel,
+            'pan' => $request->pan,
+            'tan' => $request->tan,
+            'pf_code' => $request->pf_code,
+            'esi_code' => $request->esi_code,
+            'ptax_no' => $request->ptax_no,
+            'statutory_rates' => $request->statutory_rates,
+            'company_logo' => $logoPath,
+
+            'sign_name' => $request->sign_name,
+            'sign_designation' => $request->sign_designation,
+            'sign_father_name' => $request->sign_father_name,
+            'sign_address' => $request->sign_address,
+            'sign_pan' => $request->sign_pan,
+            'sign_adhar' => $request->sign_adhar,
+            'sign_dob' => $request->sign_dob,
+            'sign_email' => $request->sign_email,
+            'sign_mobile' => $request->sign_mobile,
+
+            'employee_code' => $request->employee_code,
+        ]);
+
+        /* ----------------------------------
+        4) EMAIL EVENT
+        ---------------------------------- */
+
         // Trigger email notification
         event(new \App\Events\UserCreated($company, $validated['password'] ?? ''));
 
@@ -129,34 +225,123 @@ class CompanyController extends Controller
             return redirect()->back()->with('warning', __('Company created successfully, but welcome email failed: ') . session('email_error'));
         }
 
-        return redirect()->back()->with('success', __('Company created successfully'));
+        return redirect()
+            ->route('companies.index')
+            ->with('success', 'Company created successfully');
+
     }
 
     public function update(Request $request, User $company)
     {
-        // Ensure this is a company type user
+        // Ensure this is a company user
         if ($company->type !== 'company') {
             return redirect()->back()->with('error', __('Invalid company record'));
         }
 
+        /* ----------------------------------
+        VALIDATION
+        ---------------------------------- */
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $company->id,
             'status' => 'required|in:active,inactive',
+
+            // OPTIONAL PASSWORD
+            'password' => 'nullable|string|min:8',
+
+            // COMPANY INFO FIELDS
+            'address' => 'nullable|string',
+            'tel' => 'nullable|string',
+            'pan' => 'nullable|string',
+            'tan' => 'nullable|string',
+            'pf_code' => 'nullable|string',
+            'esi_code' => 'nullable|string',
+            'ptax_no' => 'nullable|string',
+            'statutory_rates' => 'nullable|string',
+            'company_logo' => 'nullable|image',
+
+            'sign_name' => 'nullable|string',
+            'sign_designation' => 'nullable|string',
+            'sign_father_name' => 'nullable|string',
+            'sign_address' => 'nullable|string',
+            'sign_pan' => 'nullable|string',
+            'sign_adhar' => 'nullable|string',
+            'sign_dob' => 'nullable|date',
+            'sign_email' => 'nullable|string|email',
+            'sign_mobile' => 'nullable|string',
+
+            'employee_code' => 'nullable|string',
         ]);
 
+
+        /* ----------------------------------
+        UPDATE USER TABLE (COMPANY)
+        ---------------------------------- */
         $company->name = $validated['name'];
         $company->email = $validated['email'];
         $company->status = $validated['status'];
-        // Only set password if provided
-        if (isset($validated['password'])) {
+
+        if (!empty($validated['password'])) {
             $company->password = Hash::make($validated['password']);
         }
 
         $company->save();
 
+
+        /* ----------------------------------
+        FIND OR CREATE COMPANY INFO ROW
+        ---------------------------------- */
+        $companyInfo = CompanyInfo::firstOrCreate([
+            'user_id' => $company->id
+        ]);
+
+
+        /* ----------------------------------
+        HANDLE LOGO UPLOAD
+        ---------------------------------- */
+        $logoPath = $companyInfo->company_logo; // keep old logo
+
+        if ($request->hasFile('company_logo')) {
+            // delete old logo if exists
+            if ($companyInfo->company_logo && \Storage::disk('public')->exists($companyInfo->company_logo)) {
+                \Storage::disk('public')->delete($companyInfo->company_logo);
+            }
+
+            $logoPath = $request->file('company_logo')->store('uploads/company_logos', 'public');
+        }
+
+
+        /* ----------------------------------
+        UPDATE COMPANY INFO
+        ---------------------------------- */
+        $companyInfo->update([
+            'address' => $request->address,
+            'tel' => $request->tel,
+            'pan' => $request->pan,
+            'tan' => $request->tan,
+            'pf_code' => $request->pf_code,
+            'esi_code' => $request->esi_code,
+            'ptax_no' => $request->ptax_no,
+            'statutory_rates' => $request->statutory_rates,
+            'company_logo' => $logoPath,
+
+            'sign_name' => $request->sign_name,
+            'sign_designation' => $request->sign_designation,
+            'sign_father_name' => $request->sign_father_name,
+            'sign_address' => $request->sign_address,
+            'sign_pan' => $request->sign_pan,
+            'sign_adhar' => $request->sign_adhar,
+            'sign_dob' => $request->sign_dob,
+            'sign_email' => $request->sign_email,
+            'sign_mobile' => $request->sign_mobile,
+
+            'employee_code' => $request->employee_code,
+        ]);
+
+
         return redirect()->back()->with('success', __('Company updated successfully'));
     }
+
 
     public function destroy(User $company)
     {
@@ -229,7 +414,8 @@ class CompanyController extends Controller
                     }
                 }
             } else {
-                if ($plan->enable_chatgpt === 'on') $features[] = __('AI Integration');
+                if ($plan->enable_chatgpt === 'on')
+                    $features[] = __('AI Integration');
             }
 
             // Monthly plan

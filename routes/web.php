@@ -1098,6 +1098,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         // Companies routes
         Route::middleware(['checksaas','permission:manage-companies'])->group(function () {
             Route::get('companies', [CompanyController::class, 'index'])->middleware('permission:manage-companies')->name('companies.index');
+            Route::get('companies/create', [CompanyController::class, 'create'])->middleware('permission:manage-companies')->name('companies.create');
             Route::post('companies', [CompanyController::class, 'store'])->middleware('permission:create-companies')->name('companies.store');
             Route::put('companies/{company}', [CompanyController::class, 'update'])->middleware('permission:edit-companies')->name('companies.update');
             Route::delete('companies/{company}', [CompanyController::class, 'destroy'])->middleware('permission:delete-companies')->name('companies.destroy');
