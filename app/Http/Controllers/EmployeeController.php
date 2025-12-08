@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\EmployeeTemplateExport;
+use App\Exports\FailedUsersExport;
 use App\Imports\UsersImport;
 use App\Models\Branch;
 use App\Models\Department;
@@ -14,10 +16,12 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
 
 class EmployeeController extends Controller
 {
@@ -352,7 +356,6 @@ class EmployeeController extends Controller
      */
     public function bulkCreate(Request $request)
     {
-        // dd($request->all());
         try {
             // Validate basic information
             $validator = Validator::make($request->all(), [
@@ -366,9 +369,79 @@ class EmployeeController extends Controller
             // dd("tet");
             $file = $request->file('bulk_file');
 
+            $headerRow      = (new HeadingRowImport())->toArray($file)[0][0];
+            $actualHeadings = array_map('trim', array_values($headerRow));
+
+            $requiredHeadings = [
+                'name',
+                'email',
+                'employee',
+                'phone_no',
+                'branch',
+                'department',
+                'designation',
+                'shift',
+                'date_of_birth',
+                'gender',
+                'date_of_joining',
+                // 'employment_type',
+                'address_line_1',
+                'address_line_2',
+                'city',
+                'state',
+                'country',
+                'postal_code',
+                'bank_name',
+                'account_holder_name',
+                'account_number',
+                'ifsc_code',
+                'bank_branch'
+            ];
+
+            $missing = array_diff($requiredHeadings, $actualHeadings);
+
+            if (!empty($missing)) {
+                return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missing))->withInput();
+                // return redirect()->back()->with('error', __('Failed to create employee: :message', ['message' => $e->getMessage()]))->withInput();
+                // return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missing));
+            }
+
+            // read file as array
+            // $file = $request->file('file');
+
+            // $headerRow      = (new HeadingRowImport())->toArray($file);
+            // dd($headerRow);
+
+            /* $data = Excel::toArray(new \stdClass, $file);
+
+            // Sheet 0
+            $rows = $data[0];
+
+            // Heading row
+            $headings = $rows[0];
+
+            // All data rows (excluding heading)
+            $values = array_slice($rows, 1);
+
+            dd([
+                'headings' => $headings,
+                'rows' => $values
+            ]);*/
             // Create User model object
             $import = new UsersImport();
             Excel::import($import, $file);
+
+            // if (count($import->failedRows) > 0) {
+            //     Log::info('Some rows failed during employee import', ['failed_rows' => $import->failedRows]);
+
+            //     $fileName = 'failed_rows_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+            //     return Excel::download(
+            //         new FailedUsersExport($import->failedRows),
+            //         $fileName
+            //     );
+            // }
+
 
             return redirect()->route('hr.employees.index')->with('success', __('Employee Upload successfully'));
         } catch (\Exception $e) {
@@ -786,5 +859,10 @@ class EmployeeController extends Controller
         }
 
         return response()->download($filePath);
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new EmployeeTemplateExport(), 'employee_import_template.xlsx');
     }
 }
