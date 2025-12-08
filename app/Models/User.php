@@ -366,4 +366,9 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         }
         return $this->hasMany(PlanOrder::class);
     }
+    public function companyInfo()
+    {
+        return $this->hasOne(CompanyInfo::class, 'user_id');
+    }
+
 }
