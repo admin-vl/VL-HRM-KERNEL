@@ -73,7 +73,7 @@ class CompanyController extends Controller
                 'plan_expiry_date' => $company->plan_expire_date,
                 'appointments_count' => 0,
 
-                'company_logo' => $company->companyInfo->company_logo
+                'company_logo' => optional($company->companyInfo)->company_logo
                     ? asset('storage/' . $company->companyInfo->company_logo)
                     : null,
 
