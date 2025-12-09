@@ -11,6 +11,7 @@ use App\Models\Designation;
 use App\Models\DocumentType;
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
+use App\Models\EmployeeInfo;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
@@ -265,6 +266,26 @@ class EmployeeController extends Controller
                 'documents.*.document_type_id' => 'required|exists:document_types,id',
                 'documents.*.file_path' => 'required|string',
                 'documents.*.expiry_date' => 'nullable|date',
+
+                // Employee Info
+                'title' => 'nullable|string|max:255',
+                'father_or_husband' => 'nullable|string|max:50',
+                'mother_name' => 'nullable|string|max:50',
+                'contractor' => 'nullable|string|max:255',
+                'grade' => 'nullable|string|max:20',
+                'cost_center' => 'nullable|string|max:255',
+                'reporting_person' => 'nullable|string|max:50',
+                'physical_status' => 'nullable|string|max:30',
+                'pf_number' => 'nullable|string|max:30',
+                'pf_limit' => 'nullable|string|max:30',
+                'esi_number' => 'nullable|string|max:25',
+                'uan_number' => 'nullable|string|max:20',
+                'location_id' => 'nullable|exists:locations,id',
+                'esi_applicability' => 'nullable|string|max:20',
+                'tds_applicability' => 'nullable|string|max:255',
+                'date_of_leaving' => 'nullable|date',
+                'resignation_date' => 'nullable|date',
+                'settlement_date' => 'nullable|date',
             ]);
 
             if ($validator->fails()) {
@@ -325,6 +346,30 @@ class EmployeeController extends Controller
             if (!$employee->save()) {
                 throw new \Exception('Failed to save employee data');
             }
+
+            $employeeInfo = new EmployeeInfo();
+            $employeeInfo->fill($request->only([
+                'title',
+                'father_or_husband',
+                'mother_name',
+                'contractor',
+                'grade',
+                'cost_center',
+                'reporting_person',
+                'physical_status',
+                'pf_number',
+                'pf_limit',
+                'esi_number',
+                'uan_number',
+                'location_id',
+                'esi_applicability',
+                'tds_applicability',
+                'date_of_leaving',
+                'resignation_date',
+                'settlement_date',
+            ]));
+            $employeeInfo->user_id = $user->id;
+            $employeeInfo->save();
 
             // Handle document uploads
             if ($request->has('documents') && is_array($request->documents)) {
@@ -484,7 +529,7 @@ class EmployeeController extends Controller
         }
 
         // Load user with employee relationships
-        $user = User::with(['employee.branch', 'employee.department', 'employee.designation', 'employee.documents.documentType'])
+        $user = User::with(['employee.branch', 'employee.department', 'employee.designation', 'employee.documents.documentType', 'employeeInfo'])
             ->where('id', $employee->user_id)
             ->first();
 
@@ -582,6 +627,26 @@ class EmployeeController extends Controller
                 'documents.*.document_type_id' => 'required|exists:document_types,id',
                 'documents.*.file' => 'nullable|max:5120',
                 'documents.*.expiry_date' => 'nullable|date',
+
+                // Employee Info
+                'title' => 'nullable|string|max:255',
+                'father_or_husband' => 'nullable|string|max:50',
+                'mother_name' => 'nullable|string|max:50',
+                'contractor' => 'nullable|string|max:255',
+                'grade' => 'nullable|string|max:20',
+                'cost_center' => 'nullable|string|max:255',
+                'reporting_person' => 'nullable|string|max:50',
+                'physical_status' => 'nullable|string|max:30',
+                'pf_number' => 'nullable|string|max:30',
+                'pf_limit' => 'nullable|string|max:30',
+                'esi_number' => 'nullable|string|max:25',
+                'uan_number' => 'nullable|string|max:20',
+                'location_id' => 'nullable|exists:locations,id',
+                'esi_applicability' => 'nullable|string|max:20',
+                'tds_applicability' => 'nullable|string|max:255',
+                'date_of_leaving' => 'nullable|date',
+                'resignation_date' => 'nullable|date',
+                'settlement_date' => 'nullable|date',
             ]);
 
             if ($validator->fails()) {
@@ -636,6 +701,30 @@ class EmployeeController extends Controller
             $employee->tax_payer_id = $request->tax_payer_id;
 
             $employee->save();
+
+            $employeeInfo = EmployeeInfo::where('user_id', $employee->user_id)->first();
+            $employeeInfo->fill($request->only([
+                'title',
+                'father_or_husband',
+                'mother_name',
+                'contractor',
+                'grade',
+                'cost_center',
+                'reporting_person',
+                'physical_status',
+                'pf_number',
+                'pf_limit',
+                'esi_number',
+                'uan_number',
+                'location_id',
+                'esi_applicability',
+                'tds_applicability',
+                'date_of_leaving',
+                'resignation_date',
+                'settlement_date',
+            ]));
+            $employeeInfo->user_id = $employee->user_id;
+            $employeeInfo->save();
 
             // Handle document uploads
             if ($request->has('documents') && is_array($request->documents)) {

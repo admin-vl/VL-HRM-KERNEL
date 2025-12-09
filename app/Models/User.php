@@ -305,6 +305,14 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the employee info associated with the user
+     */
+    public function employeeInfo()
+    {
+        return $this->hasOne(EmployeeInfo::class, 'user_id');
+    }
+
+    /**
      * Get referral balance for company
      */
     public function getReferralBalance()
