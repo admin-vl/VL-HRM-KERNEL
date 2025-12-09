@@ -20,89 +20,133 @@ class CompanyController extends Controller
         ]);
     }
 
-public function index(Request $request)
-{
-    $query = User::query()
-        ->where('type', 'company')
-        ->with(['plan', 'companyInfo']); // <-- added companyInfo relation
+    public function index(Request $request)
+    {
+        $query = User::query()
+            ->where('type', 'company')
+            ->with(['plan', 'companyInfo']); // <-- added companyInfo relation
 
-    // Apply search filter
-    if ($request->filled('search')) {
-        $query->where(function ($q) use ($request) {
-            $q->where('name', 'like', "%{$request->search}%")
-                ->orWhere('email', 'like', "%{$request->search}%")
-                ->orWhereHas('companyInfo', function ($info) use ($request) {
-                    $info->where('company_name', 'like', "%{$request->search}%")
-                         ->orWhere('contact_person', 'like', "%{$request->search}%");
-                });
+        // Apply search filter
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('email', 'like', "%{$request->search}%")
+                    ->orWhereHas('companyInfo', function ($info) use ($request) {
+                        $info->where('company_name', 'like', "%{$request->search}%")
+                            ->orWhere('contact_person', 'like', "%{$request->search}%");
+                    });
+            });
+        }
+
+        // Apply status filter
+        if ($request->status && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Date filters
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        // Sorting
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        // Pagination
+        $perPage = $request->input('per_page', 10);
+        $companies = $query->paginate($perPage)->withQueryString();
+
+        // Format data
+        $companies->getCollection()->transform(function ($company) {
+            return [
+                'id' => $company->id,
+                'name' => $company->name,
+                'email' => $company->email,
+                'status' => $company->status,
+                'created_at' => $company->created_at,
+                'plan_name' => $company->plan->name ?? __('No Plan'),
+                'plan_expiry_date' => $company->plan_expire_date,
+                'appointments_count' => 0,
+
+                'company_logo' => $company->companyInfo->company_logo
+                    ? asset('storage/' . $company->companyInfo->company_logo)
+                    : null,
+
+                'company_info' => [
+                    'company_name' => $company->companyInfo->company_name ?? null,
+                    'email' => $company->companyInfo->email ?? null,
+                    'phone' => $company->companyInfo->phone ?? null,
+                    'address' => $company->companyInfo->address ?? null,
+                    'city' => $company->companyInfo->city ?? null,
+                    'state' => $company->companyInfo->state ?? null,
+                    'country' => $company->companyInfo->country ?? null,
+                    'pincode' => $company->companyInfo->pincode ?? null,
+                    'contact_person' => $company->companyInfo->contact_person ?? null,
+                    'gst_number' => $company->companyInfo->gst_number ?? null,
+                    'website' => $company->companyInfo->website ?? null,
+                ]
+            ];
         });
+
+        // Plans for dropdown
+        $plans = Plan::all(['id', 'name']);
+
+        return Inertia::render('companies/index', [
+            'companies' => $companies,
+            'plans' => $plans,
+            'filters' => $request->only([
+                'search',
+                'status',
+                'start_date',
+                'end_date',
+                'sort_field',
+                'sort_direction',
+                'per_page'
+            ])
+        ]);
     }
 
-    // Apply status filter
-    if ($request->status && $request->status !== 'all') {
-        $query->where('status', $request->status);
-    }
+    public function edit($id)
+    {
+        $company = User::with('companyInfo')->findOrFail($id);
 
-    // Date filters
-    if ($request->filled('start_date')) {
-        $query->whereDate('created_at', '>=', $request->start_date);
-    }
+        return Inertia::render('companies/EditCompany', [
+            'company' => [
+                'id' => $company->id,
+                'name' => $company->name,
+                'email' => $company->email,
+                'status' => $company->status,
 
-    if ($request->filled('end_date')) {
-        $query->whereDate('created_at', '<=', $request->end_date);
-    }
+                // Company Info
+                'address' => $company->companyInfo->address ?? '',
+                'tel' => $company->companyInfo->tel ?? '',
+                'pan' => $company->companyInfo->pan ?? '',
+                'tan' => $company->companyInfo->tan ?? '',
+                'pf_code' => $company->companyInfo->pf_code ?? '',
+                'esi_code' => $company->companyInfo->esi_code ?? '',
+                'ptax_no' => $company->companyInfo->ptax_no ?? '',
+                'statutory_rates' => $company->companyInfo->statutory_rates ?? '',
+                'company_logo' => $company->companyInfo->company_logo ?? '',
 
-    // Sorting
-    $sortField = $request->input('sort_field', 'created_at');
-    $sortDirection = $request->input('sort_direction', 'desc');
-    $query->orderBy($sortField, $sortDirection);
-
-    // Pagination
-    $perPage = $request->input('per_page', 10);
-    $companies = $query->paginate($perPage)->withQueryString();
-
-    // Format data
-    $companies->getCollection()->transform(function ($company) {
-        return [
-            'id' => $company->id,
-            'name' => $company->name,
-            'email' => $company->email,
-            'status' => $company->status,
-            'created_at' => $company->created_at,
-            'plan_name' => $company->plan->name ?? __('No Plan'),
-            'plan_expiry_date' => $company->plan_expire_date,
-            'appointments_count' => 0,
-
-            // ---- NEW FIELDS FROM company_info ----
-            'company_info' => [
-                'company_name'     => $company->companyInfo->company_name ?? null,
-                'email'            => $company->companyInfo->email ?? null,
-                'phone'            => $company->companyInfo->phone ?? null,
-                'address'          => $company->companyInfo->address ?? null,
-                'city'             => $company->companyInfo->city ?? null,
-                'state'            => $company->companyInfo->state ?? null,
-                'country'          => $company->companyInfo->country ?? null,
-                'pincode'          => $company->companyInfo->pincode ?? null,
-                'contact_person'   => $company->companyInfo->contact_person ?? null,
-                'gst_number'       => $company->companyInfo->gst_number ?? null,
-                'website'          => $company->companyInfo->website ?? null,
+                // Signatory
+                'sign_name' => $company->companyInfo->sign_name ?? '',
+                'sign_designation' => $company->companyInfo->sign_designation ?? '',
+                'sign_father_name' => $company->companyInfo->sign_father_name ?? '',
+                'sign_address' => $company->companyInfo->sign_address ?? '',
+                'sign_pan' => $company->companyInfo->sign_pan ?? '',
+                'sign_adhar' => $company->companyInfo->sign_adhar ?? '',
+                'sign_dob' => $company->companyInfo->sign_dob ?? '',
+                'sign_email' => $company->companyInfo->sign_email ?? '',
+                'sign_mobile' => $company->companyInfo->sign_mobile ?? '',
+                'employee_code' => $company->companyInfo->employee_code ?? '',
             ]
-        ];
-    });
-
-    // Plans for dropdown
-    $plans = Plan::all(['id', 'name']);
-
-    return Inertia::render('companies/index', [
-        'companies' => $companies,
-        'plans' => $plans,
-        'filters' => $request->only([
-            'search', 'status', 'start_date', 'end_date',
-            'sort_field', 'sort_direction', 'per_page'
-        ])
-    ]);
-}
-
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -185,7 +229,7 @@ public function index(Request $request)
         /* ----------------------------------
         3) CREATE COMPANY INFO RECORD
  ---------------------------------- */
- 
+
         CompanyInfo::create([
             'user_id' => $company->id,
             'company_name' => $request->name,
@@ -231,25 +275,17 @@ public function index(Request $request)
 
     }
 
-    public function update(Request $request, User $company)
+    public function update(Request $request, $id)
     {
-        // Ensure this is a company user
-        if ($company->type !== 'company') {
-            return redirect()->back()->with('error', __('Invalid company record'));
-        }
+        $company = User::findOrFail($id);
 
-        /* ----------------------------------
-        VALIDATION
-        ---------------------------------- */
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $company->id,
-            'status' => 'required|in:active,inactive',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            // 'password' => 'nullable|string|min:8',
+            // 'status' => 'required|in:active,inactive',
 
-            // OPTIONAL PASSWORD
-            'password' => 'nullable|string|min:8',
-
-            // COMPANY INFO FIELDS
+            // Company info
             'address' => 'nullable|string',
             'tel' => 'nullable|string',
             'pan' => 'nullable|string',
@@ -260,6 +296,7 @@ public function index(Request $request)
             'statutory_rates' => 'nullable|string',
             'company_logo' => 'nullable|image',
 
+            // Signatory
             'sign_name' => 'nullable|string',
             'sign_designation' => 'nullable|string',
             'sign_father_name' => 'nullable|string',
@@ -267,55 +304,34 @@ public function index(Request $request)
             'sign_pan' => 'nullable|string',
             'sign_adhar' => 'nullable|string',
             'sign_dob' => 'nullable|date',
-            'sign_email' => 'nullable|string|email',
+            'sign_email' => 'nullable|email',
             'sign_mobile' => 'nullable|string',
-
             'employee_code' => 'nullable|string',
         ]);
 
-
-        /* ----------------------------------
-        UPDATE USER TABLE (COMPANY)
-        ---------------------------------- */
+        // Update base user
         $company->name = $validated['name'];
         $company->email = $validated['email'];
-        $company->status = $validated['status'];
+        // $company->status = $validated['status'];
 
-        if (!empty($validated['password'])) {
-            $company->password = Hash::make($validated['password']);
-        }
+        // if (!empty($validated['password'])) {
+        //     $company->password = Hash::make($validated['password']);
+        // }
 
         $company->save();
 
-
-        /* ----------------------------------
-        FIND OR CREATE COMPANY INFO ROW
-        ---------------------------------- */
-        $companyInfo = CompanyInfo::firstOrCreate([
-            'user_id' => $company->id
-        ]);
-
-
-        /* ----------------------------------
-        HANDLE LOGO UPLOAD
-        ---------------------------------- */
-        $logoPath = $companyInfo->company_logo; // keep old logo
+        /* -------------- LOGO Upload --------------- */
+        $logoPath = $company->companyInfo->company_logo ?? null;
 
         if ($request->hasFile('company_logo')) {
-            // delete old logo if exists
-            if ($companyInfo->company_logo && \Storage::disk('public')->exists($companyInfo->company_logo)) {
-                \Storage::disk('public')->delete($companyInfo->company_logo);
-            }
-
             $logoPath = $request->file('company_logo')->store('uploads/company_logos', 'public');
         }
 
-
-        /* ----------------------------------
-        UPDATE COMPANY INFO
-        ---------------------------------- */
-        $companyInfo->update([
+        /* -------------- Update CompanyInfo --------------- */
+        $company->companyInfo()->update([
+            'company_name' => $request->name,
             'address' => $request->address,
+            'email' => $request->email,
             'tel' => $request->tel,
             'pan' => $request->pan,
             'tan' => $request->tan,
@@ -334,12 +350,12 @@ public function index(Request $request)
             'sign_dob' => $request->sign_dob,
             'sign_email' => $request->sign_email,
             'sign_mobile' => $request->sign_mobile,
-
             'employee_code' => $request->employee_code,
         ]);
 
-
-        return redirect()->back()->with('success', __('Company updated successfully'));
+        return redirect()
+            ->route('companies.index')
+            ->with('success', 'Company updated successfully');
     }
 
 
