@@ -54,6 +54,7 @@ Object.keys(formData).forEach((key) => {
                     toast.error(page.props.flash.error);
                 }
             },
+            //For errors
             onError: (errors) => {
                 toast.dismiss();
 
