@@ -396,7 +396,14 @@ export default function Companies() {
             render: (value: any, row: any) => {
                 return (
                     <div className="flex items-center gap-3">
-                        <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-full text-white">{getInitials(row.name)}</div>
+                        {row.company_logo ? (
+                            <img src={row.company_logo} className="h-10 w-10 rounded-full object-cover" alt="Company Logo" />
+                        ) : (
+                            <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-full text-white">
+                                {getInitials(row.name)}
+                            </div>
+                        )}
+
                         <div>
                             <div className="font-medium">{row.name}</div>
                             <div className="text-muted-foreground text-sm">{row.email}</div>
@@ -612,7 +619,7 @@ export default function Companies() {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            onClick={() => handleAction('edit', company)}
+                                                            onClick={() => router.visit(route('companies.edit', company.id))}
                                                             className="text-amber-500 hover:text-amber-700"
                                                         >
                                                             <Edit className="h-4 w-4" />
