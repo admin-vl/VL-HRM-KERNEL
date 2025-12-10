@@ -14,6 +14,7 @@ export default function EmployeeCreate() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [bulkMode, setBulkMode] = useState<'add' | 'update'>('add');
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,7 +22,7 @@ export default function EmployeeCreate() {
     setIsSubmitting(true);
 
     const submitData = new FormData();
-
+    submitData.append('bulk_mode', bulkMode);
     if (bulkFile) {
       submitData.append('bulk_file', bulkFile);
     }
@@ -73,34 +74,79 @@ export default function EmployeeCreate() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information Card */}
         <Card>
-          <CardHeader className="flex items-start justify-between">
-            {/* <CardTitle>{t('Bulk Employee Upload')}</CardTitle> */}
-            <div className="flex items-center space-x-2">
-              <input
-                id="bulk_file"
-                type="file"
-                accept=",.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setBulkFile(e.target.files[0]);
-                    if (errors['bulk_file']) {
-                      setErrors(prev => { const n = { ...prev }; delete n['bulk_file']; return n; });
-                    }
+          <CardHeader className="flex flex-col items-start w-full space-y-4">
+
+            {/* Row 1: Radio buttons */}
+            <div className="flex items-center space-x-6">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="bulk_mode"
+                  value="add"
+                  checked={bulkMode === 'add'}
+                  onChange={() => setBulkMode("add")}
+                />
+                <span>Add</span>
+              </label>
+
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="bulk_mode"
+                  value="update"
+                  checked={bulkMode === 'update'}
+                  onChange={() => setBulkMode("update")}
+                />
+                <span>Update</span>
+              </label>
+            </div>
+
+            {/* Hidden file input */}
+            <input
+              id="bulk_file"
+              type="file"
+              accept=",.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setBulkFile(e.target.files[0]);
+                  if (errors['bulk_file']) {
+                    setErrors(prev => {
+                      const n = { ...prev };
+                      delete n['bulk_file'];
+                      return n;
+                    });
                   }
-                }}
-                className="hidden"
-              />
-              <Button type="button" variant="outline" onClick={() => (document.getElementById('bulk_file') as HTMLInputElement | null)?.click()}>
+                }
+              }}
+              className="hidden"
+            />
+
+            {/* Row 2: Buttons left & right */}
+            <div className="flex items-center justify-between w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  (document.getElementById('bulk_file') as HTMLInputElement | null)?.click()
+                }
+              >
                 <Upload className="h-4 w-4 mr-2" />
                 {t('Upload')}
               </Button>
-              {/* <Button type="button" variant="outline" onClick={() => { (globalThis as any).location.href = '/public/samples/bulk_employees_sample.csv'; }}> */}
-              <Button type="button" variant="outline" onClick={() => { (globalThis as any).location.href = route('hr.employees.download-template'); }}>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  (globalThis as any).location.href = route('hr.employees.download-template');
+                }}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 {t('Download Sample')}
               </Button>
             </div>
           </CardHeader>
+
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -137,7 +183,7 @@ export default function EmployeeCreate() {
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? t('Saving...') : t('Import Employee')}
+            {isSubmitting ? t('Saving...') : t('Save Employee')}
           </Button>
         </div>
       </form>

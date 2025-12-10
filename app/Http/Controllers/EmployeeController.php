@@ -413,6 +413,7 @@ class EmployeeController extends Controller
             }
             // dd("tet");
             $file = $request->file('bulk_file');
+            $bulkMode = $request->input('bulk_mode'); // 'add' or 'update'
 
             $headerRow      = (new HeadingRowImport())->toArray($file)[0][0];
             $actualHeadings = array_map('trim', array_values($headerRow));
@@ -473,7 +474,7 @@ class EmployeeController extends Controller
                 'rows' => $values
             ]);*/
             // Create User model object
-            $import = new UsersImport();
+            $import = new UsersImport($bulkMode);
             Excel::import($import, $file);
 
             // if (count($import->failedRows) > 0) {

@@ -24,10 +24,11 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
     public array $failedRows = [];   // IMPORTANT
 
     protected $createdBy;
-
-    public function __construct()
+    private $bulkMode;
+    public function __construct($bulkMode = 'add')
     {
         $this->createdBy = Auth::id() ?? 1;
+        $this->bulkMode = $bulkMode;
     }
 
     private function parseDate($value)
@@ -54,10 +55,10 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
 
             $branchId = Branch::where('name', $branchName)->value('id');
             $departmentId = Department::where('name', $departmentName)
-                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->value('id');
             $designationId = Designation::where('name', $designationName)
-                ->when($departmentId, fn ($q) => $q->where('department_id', $departmentId))
+                ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
                 ->value('id');
             $shiftId = Shift::where('name', $shiftName)->value('id');
 
@@ -75,6 +76,7 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
             $phone = data_get($row, 'phone_no');
 
             if (!$email || !$employeeId || !$phone) {
+                Log::info("Missing required fields in row: " . json_encode($row));
                 return null;
                 // throw new \Exception("Missing required fields");
             }
@@ -83,19 +85,40 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
 
                 $name = data_get($row, 'name');
 
-                $user = User::firstOrCreate(
-                    ['email' => $email],
-                    [
+                // $user = User::firstOrCreate(
+                //     ['email' => $email],
+                //     [
+                //         'name'       => $name,
+                //         'type'       => 'employee',
+                //         'password'   => Hash::make('password'),
+                //         'created_by' => $this->createdBy,
+                //     ]
+                // );
+                if($this->bulkMode === 'add'){
+                    $user = User::create([
                         'name'       => $name,
+                        'email'      => $email,
                         'type'       => 'employee',
                         'password'   => Hash::make('password'),
                         'created_by' => $this->createdBy,
-                    ]
-                );
-
-                if (!$user->name && $name) {
-                    $user->update(['name' => $name]);
+                    ]);
+                } elseif($this->bulkMode === 'update'){
+                    $user = User::where('email', $email)->first();
+                    if(!$user){
+                        throw new \Exception("User with email {$email} not found for update.");
+                    }
                 }
+                if ($this->bulkMode === 'update') {
+                    Log::info("Updating user: " . $user->id);
+                    // Update name if in update mode
+                    if ($name) {
+                        $user->update(['name' => $name]);
+                    }
+                }
+
+                // if (!$user->name && $name) {
+                //     $user->update(['name' => $name]);
+                // }
 
                 $ids = $this->convertNamesToIds($row);
 
@@ -114,15 +137,23 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
 
                     'branch_id'     => $ids['branchId'],
                     'department_id' => $ids['departmentId'],
-                    'designation_id'=> $ids['designationId'],
+                    'designation_id' => $ids['designationId'],
                     'shift_id'      => $ids['shiftId'] ?? null,
                 ];
 
-                $employee = Employee::firstOrNew(['user_id' => $user->id]);
-                $employee->fill($employeePayload);
-                $employee->save();
+                if ($this->bulkMode === 'add') {
+                    Employee::create($employeePayload);
+                } elseif ($this->bulkMode === 'update') {
+                    $employee = Employee::where('user_id', $user->id)->first();
+                    if ($employee) {
+                        // Log::info("Updating employee: " . $employee->id);
+                        $employee->update($employeePayload);
+                    }
+                }
+                // $employee = Employee::firstOrNew(['user_id' => $user->id]);
+                // $employee->fill($employeePayload);
+                // $employee->save();
             });
-
         } catch (\Throwable $e) {
 
             // capture failed row + error
@@ -135,6 +166,12 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
         return null;
     }
 
-    public function chunkSize(): int { return 1000; }
-    public function batchSize(): int { return 1000; }
+    public function chunkSize(): int
+    {
+        return 1000;
+    }
+    public function batchSize(): int
+    {
+        return 1000;
+    }
 }
