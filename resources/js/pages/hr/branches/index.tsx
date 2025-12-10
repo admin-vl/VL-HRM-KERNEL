@@ -199,7 +199,7 @@ export default function Branches() {
   // Add the "Add New Branch" button if user has permission
   if (hasPermission(permissions, 'create-branches')) {
     pageActions.push({
-      label: t('Add Branch'),
+      label: t('Add Location'),
       icon: <Plus className="h-4 w-4 mr-2" />,
       variant: 'default',
       onClick: () => handleAddNew()
@@ -209,7 +209,7 @@ export default function Branches() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('HR Management'), href: route('hr.branches.index') },
-    { title: t('Branches') }
+    { title: t('Locations') }
   ];
 
   // Define table columns
@@ -300,7 +300,7 @@ export default function Branches() {
 
   return (
     <PageTemplate
-      title={t("Branch Management")}
+      title={t("Location Management")}
       url="/hr/branches"
       actions={pageActions}
       breadcrumbs={breadcrumbs}
@@ -368,12 +368,14 @@ export default function Branches() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Branch Name'), type: 'text', required: true },
+            { name: 'name', label: t('Location Name'), type: 'text', required: true },
             { name: 'address', label: t('Address'), type: 'textarea' },
             { name: 'city', label: t('City'), type: 'text' },
             { name: 'state', label: t('State/Province'), type: 'text' },
             { name: 'country', label: t('Country'), type: 'text' },
             { name: 'zip_code', label: t('ZIP/Postal Code'), type: 'text' },
+            { name: 'professional_tax_rates', label: t('Professional Tax Rates'), type: 'text' },
+            { name: 'labour_welfare_fund', label: t('Labour Welfare Fund'), type: 'checkbox' },
             { name: 'phone', label: t('Phone'), type: 'text' },
             { name: 'email', label: t('Email'), type: 'email' },
             {
@@ -392,10 +394,10 @@ export default function Branches() {
         initialData={currentItem}
         title={
           formMode === 'create'
-            ? t('Add New Branch')
+            ? t('Add New Location')
             : formMode === 'edit'
-              ? t('Edit Branch')
-              : t('View Branch')
+              ? t('Edit Location')
+              : t('View Location')
         }
         mode={formMode}
       />
