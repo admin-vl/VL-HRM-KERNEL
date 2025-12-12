@@ -365,7 +365,18 @@ export default function Branches() {
       <CrudFormModal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
+        onSubmit={(data) => {
+                  // Convert boolean to integer (Laravel expects 0/1 or true/false)
+                  data.welfare_status = data.welfare_status ? 1 : 0;
+
+                  // If OFF → remove dependent fields
+                  if (data.welfare_status === 0) {
+                      data.welfare_type = null;
+                      data.welfare_fund = null;
+                  }
+
+                  handleFormSubmit(data);
+                }}
         formConfig={{
           fields: [
             { name: 'name', label: t('Location Name'), type: 'text', required: true },
@@ -375,7 +386,22 @@ export default function Branches() {
             { name: 'country', label: t('Country'), type: 'text' },
             { name: 'zip_code', label: t('ZIP/Postal Code'), type: 'text' },
             { name: 'professional_tax_rates', label: t('Professional Tax Rates'), type: 'text' },
-            { name: 'labour_welfare_fund', label: t('Labour Welfare Fund'), type: 'checkbox' },
+            { name: 'welfare_status', label: t('Labour Welfare Fund status'), type: 'switch' },
+            {
+              name: 'welfare_type',
+              label: t('Type'),
+              type: 'select',
+              options: [
+                { value: 'fix', label: t('fix') },
+                { value: 'percent', label: t('percent') }
+              ],
+              defaultValue: 'fix',
+              conditional: (mode, data) => data?.welfare_status === true,
+            },
+            {
+              name: 'welfare_fund', label: t('Labour Welfare Fund'), type: 'text',
+              conditional: (mode, data) => data?.welfare_status === true,
+             },
             { name: 'phone', label: t('Phone'), type: 'text' },
             { name: 'email', label: t('Email'), type: 'email' },
             {

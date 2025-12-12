@@ -49,12 +49,20 @@ class BranchController extends Controller
                 'phone' => 'nullable|string|max:20',
                 'email' => 'nullable|email|max:255',
                 'status' => 'nullable|in:active,inactive',
+                
+                // ⭐ New fields
+                'professional_tax_rates'   => 'nullable|string|max:255',
+                'welfare_status' => 'nullable|boolean',
+                'welfare_type'   => 'nullable|in:fix,percent',
+                'welfare_fund'   => 'nullable|string|max:255',
             ]);
 
             $validated['created_by'] = creatorId();
             $validated['status'] = $validated['status'] ?? 'active';
+            $validated['welfare_status'] = $validated['welfare_status'] ?? false;
+            $validated['welfare_type'] = $validated['welfare_type'] ?? 'fix';
 
-            // Check if branch with same name already exists
+            // Check if branch with same name already exists 
             $exists = Branch::where('name', $validated['name'])
                 ->whereIn('created_by', getCompanyAndUsersId())
                 ->exists();
@@ -90,6 +98,12 @@ class BranchController extends Controller
                     'phone' => 'nullable|string|max:20',
                     'email' => 'nullable|email|max:255',
                     'status' => 'nullable|in:active,inactive',
+                    
+                    // ⭐ New fields
+                    'professional_tax_rates'   => 'nullable|string|max:255',
+                    'welfare_status' => 'nullable|boolean',
+                    'welfare_type'   => 'nullable|in:fix,percent',
+                    'welfare_fund'   => 'nullable|string|max:255',
                 ]);
 
                 // Check if branch with same name already exists (excluding current branch)
