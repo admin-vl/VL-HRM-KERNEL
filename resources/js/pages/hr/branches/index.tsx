@@ -199,7 +199,7 @@ export default function Branches() {
   // Add the "Add New Branch" button if user has permission
   if (hasPermission(permissions, 'create-branches')) {
     pageActions.push({
-      label: t('Add Branch'),
+      label: t('Add Location'),
       icon: <Plus className="h-4 w-4 mr-2" />,
       variant: 'default',
       onClick: () => handleAddNew()
@@ -209,7 +209,7 @@ export default function Branches() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('HR Management'), href: route('hr.branches.index') },
-    { title: t('Branches') }
+    { title: t('Locations') }
   ];
 
   // Define table columns
@@ -300,7 +300,7 @@ export default function Branches() {
 
   return (
     <PageTemplate
-      title={t("Branch Management")}
+      title={t("Location Management")}
       url="/hr/branches"
       actions={pageActions}
       breadcrumbs={breadcrumbs}
@@ -365,15 +365,43 @@ export default function Branches() {
       <CrudFormModal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
-        onSubmit={handleFormSubmit}
+        onSubmit={(data) => {
+                  // Convert boolean to integer (Laravel expects 0/1 or true/false)
+                  data.welfare_status = data.welfare_status ? 1 : 0;
+
+                  // If OFF → remove dependent fields
+                  if (data.welfare_status === 0) {
+                      data.welfare_type = null;
+                      data.welfare_fund = null;
+                  }
+
+                  handleFormSubmit(data);
+                }}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Branch Name'), type: 'text', required: true },
+            { name: 'name', label: t('Location Name'), type: 'text', required: true },
             { name: 'address', label: t('Address'), type: 'textarea' },
             { name: 'city', label: t('City'), type: 'text' },
             { name: 'state', label: t('State/Province'), type: 'text' },
             { name: 'country', label: t('Country'), type: 'text' },
             { name: 'zip_code', label: t('ZIP/Postal Code'), type: 'text' },
+            { name: 'professional_tax_rates', label: t('Professional Tax Rates'), type: 'text' },
+            { name: 'welfare_status', label: t('Labour Welfare Fund status'), type: 'switch' },
+            {
+              name: 'welfare_type',
+              label: t('Type'),
+              type: 'select',
+              options: [
+                { value: 'fix', label: t('fix') },
+                { value: 'percent', label: t('percent') }
+              ],
+              defaultValue: 'fix',
+              conditional: (mode, data) => data?.welfare_status === true,
+            },
+            {
+              name: 'welfare_fund', label: t('Labour Welfare Fund'), type: 'text',
+              conditional: (mode, data) => data?.welfare_status === true,
+             },
             { name: 'phone', label: t('Phone'), type: 'text' },
             { name: 'email', label: t('Email'), type: 'email' },
             {
@@ -392,10 +420,10 @@ export default function Branches() {
         initialData={currentItem}
         title={
           formMode === 'create'
-            ? t('Add New Branch')
+            ? t('Add New Location')
             : formMode === 'edit'
-              ? t('Edit Branch')
-              : t('View Branch')
+              ? t('Edit Location')
+              : t('View Location')
         }
         mode={formMode}
       />

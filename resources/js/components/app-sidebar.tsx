@@ -150,7 +150,7 @@ export function AppSidebar() {
         const hrChildren = [];
         if (hasPermission(permissions, 'manage-branches')) {
             hrChildren.push({
-                title: t('Branches'),
+                title: t('Locations'),
                 href: route('hr.branches.index')
             });
         }
