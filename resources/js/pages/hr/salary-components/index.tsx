@@ -11,6 +11,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { getRecurringType, getSalaryComponentType } from '@/constants/salarymaster';
 
 export default function SalaryComponents() {
   const { t } = useTranslation();
@@ -20,6 +21,7 @@ export default function SalaryComponents() {
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedType, setSelectedType] = useState(pageFilters.type || 'all');
+  const [selectedRecurringType, setSelectedRecurringType] = useState(pageFilters.recurring_type || 'all');
   const [selectedCalculationType, setSelectedCalculationType] = useState(pageFilters.calculation_type || 'all');
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
   const [showFilters, setShowFilters] = useState(false);
@@ -48,6 +50,7 @@ export default function SalaryComponents() {
       page: 1,
       search: searchTerm || undefined,
       type: selectedType !== 'all' ? selectedType : undefined,
+      recurring_type: selectedRecurringType !== 'all' ? selectedRecurringType : undefined,
       calculation_type: selectedCalculationType !== 'all' ? selectedCalculationType : undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
       per_page: pageFilters.per_page
@@ -63,6 +66,7 @@ export default function SalaryComponents() {
       page: 1,
       search: searchTerm || undefined,
       type: selectedType !== 'all' ? selectedType : undefined,
+      recurring_type: selectedRecurringType !== 'all' ? selectedRecurringType : undefined,
       calculation_type: selectedCalculationType !== 'all' ? selectedCalculationType : undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
       per_page: pageFilters.per_page
@@ -196,6 +200,7 @@ export default function SalaryComponents() {
     setSearchTerm('');
     setSelectedType('all');
     setSelectedCalculationType('all');
+    setSelectedRecurringType('all')
     setSelectedStatus('all');
     setShowFilters(false);
 
@@ -232,6 +237,18 @@ export default function SalaryComponents() {
       sortable: true
     },
     {
+      key: 'recurring_type',
+      label: t('Recurring Type'),
+      render: (value: string) => (
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'earning'
+          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+          : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
+          }`}>
+          {value === 'recurring' ? t('Recurring Type') : t('Non Recurring')}
+        </span>
+      )
+    },
+    {
       key: 'type',
       label: t('Type'),
       render: (value: string) => (
@@ -260,8 +277,8 @@ export default function SalaryComponents() {
       label: t('Amount/Percentage'),
       render: (value: any, row: any) => (
         <span className="font-mono">
-          {row.calculation_type === 'fixed' 
-            ? window.appSettings?.formatCurrency(row.default_amount) 
+          {row.calculation_type === 'fixed'
+            ? window.appSettings?.formatCurrency(row.default_amount)
             : `${row.percentage_of_basic}%`
           }
         </span>
@@ -343,7 +360,8 @@ export default function SalaryComponents() {
   const typeOptions = [
     { value: 'all', label: t('All Types') },
     { value: 'earning', label: t('Earning') },
-    { value: 'deduction', label: t('Deduction') }
+    { value: 'deduction', label: t('Deduction') },
+    { value: 'reimbursement', label: t('Reimbursement') },
   ];
 
   const calculationTypeOptions = [
@@ -352,11 +370,20 @@ export default function SalaryComponents() {
     { value: 'percentage', label: t('Percentage') }
   ];
 
+  const recurringTypeOptions = [
+    { value: 'all', label: t('All Recurring Type') },
+    { value: 'recurring', label: t('Recurring') },
+    { value: 'non-recurring', label: t('Non Recurring') }
+  ]
+
   const statusOptions = [
     { value: 'all', label: t('All Statuses') },
     { value: 'active', label: t('Active') },
     { value: 'inactive', label: t('Inactive') }
   ];
+
+  const salaryComponentType = getSalaryComponentType(t);
+  const recurringType = getRecurringType(t);
 
   return (
     <PageTemplate
@@ -373,6 +400,14 @@ export default function SalaryComponents() {
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
           filters={[
+            {
+              name: 'recurring_type',
+              label: t('Recurring Type'),
+              type: 'select',
+              value: selectedCalculationType,
+              onChange: setSelectedRecurringType,
+              options: recurringTypeOptions
+            },
             {
               name: 'type',
               label: t('Type'),
@@ -411,6 +446,7 @@ export default function SalaryComponents() {
               per_page: parseInt(value),
               search: searchTerm || undefined,
               type: selectedType !== 'all' ? selectedType : undefined,
+              recurring_type: selectedRecurringType !== 'all' ? selectedRecurringType : undefined,
               calculation_type: selectedCalculationType !== 'all' ? selectedCalculationType : undefined,
               status: selectedStatus !== 'all' ? selectedStatus : undefined
             }, { preserveState: true, preserveScroll: true });
@@ -459,14 +495,18 @@ export default function SalaryComponents() {
             { name: 'name', label: t('Component Name'), type: 'text', required: true },
             { name: 'description', label: t('Description'), type: 'textarea' },
             {
+              name: 'recurring_type',
+              label: t('Recurring Type'),
+              type: 'select',
+              required: true,
+              options: recurringType
+            },
+            {
               name: 'type',
               label: t('Type'),
               type: 'select',
               required: true,
-              options: [
-                { value: 'earning', label: t('Earning') },
-                { value: 'deduction', label: t('Deduction') }
-              ]
+              options: salaryComponentType
             },
             {
               name: 'calculation_type',

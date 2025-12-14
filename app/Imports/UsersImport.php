@@ -85,16 +85,16 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
 
                 $name = data_get($row, 'name');
 
-                // $user = User::firstOrCreate(
-                //     ['email' => $email],
-                //     [
-                //         'name'       => $name,
-                //         'type'       => 'employee',
-                //         'password'   => Hash::make('password'),
-                //         'created_by' => $this->createdBy,
-                //     ]
-                // );
-                if($this->bulkMode === 'add'){
+                if ($this->bulkMode === 'add') {
+                    $employeeExists = Employee::where('employee_id', $row['employee'])->first();
+                    $userExists = Employee::where('employee_id', $row['employee'])->first();
+                    if ($userExists) {
+                        throw new \Exception("Employee already exists waith email $email.");
+                    }
+                    if ($employeeExists) {
+                        throw new \Exception("Employee already exists waith employee code {$row['employee']}.");
+                    }
+
                     $user = User::create([
                         'name'       => $name,
                         'email'      => $email,
@@ -102,15 +102,15 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
                         'password'   => Hash::make('password'),
                         'created_by' => $this->createdBy,
                     ]);
-                } elseif($this->bulkMode === 'update'){
-                    $user = User::where('email', $email)->first();
-                    if(!$user){
+                } elseif ($this->bulkMode === 'update') {
+                    $employeeUser = Employee::where('employee_id', $row['employee'])->first();
+                    if (!$employeeUser) {
+                        throw new \Exception("User with employee code {$row['employee']} not found for update.");
+                    }
+                    $user = User::where('id', $employeeUser->user_id)->first();
+                    if (!$user) {
                         throw new \Exception("User with email {$email} not found for update.");
                     }
-                }
-                if ($this->bulkMode === 'update') {
-                    Log::info("Updating user: " . $user->id);
-                    // Update name if in update mode
                     if ($name) {
                         $user->update(['name' => $name]);
                     }

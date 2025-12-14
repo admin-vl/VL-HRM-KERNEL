@@ -405,13 +405,12 @@ class EmployeeController extends Controller
             // Validate basic information
             $validator = Validator::make($request->all(), [
                 'bulk_file' => 'required'
-                // 'bulk_file' => 'required|mimes:xlsx,csv,xls'
             ]);
 
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
             }
-            // dd("tet");
+
             $file = $request->file('bulk_file');
             $bulkMode = $request->input('bulk_mode'); // 'add' or 'update'
 
@@ -430,7 +429,6 @@ class EmployeeController extends Controller
                 'date_of_birth',
                 'gender',
                 'date_of_joining',
-                // 'employment_type',
                 'address_line_1',
                 'address_line_2',
                 'city',
@@ -448,46 +446,39 @@ class EmployeeController extends Controller
 
             if (!empty($missing)) {
                 return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missing))->withInput();
-                // return redirect()->back()->with('error', __('Failed to create employee: :message', ['message' => $e->getMessage()]))->withInput();
-                // return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missing));
             }
 
-            // read file as array
-            // $file = $request->file('file');
-
-            // $headerRow      = (new HeadingRowImport())->toArray($file);
-            // dd($headerRow);
-
-            /* $data = Excel::toArray(new \stdClass, $file);
-
-            // Sheet 0
-            $rows = $data[0];
-
-            // Heading row
-            $headings = $rows[0];
-
-            // All data rows (excluding heading)
-            $values = array_slice($rows, 1);
-
-            dd([
-                'headings' => $headings,
-                'rows' => $values
-            ]);*/
             // Create User model object
             $import = new UsersImport($bulkMode);
             Excel::import($import, $file);
 
-            // if (count($import->failedRows) > 0) {
-            //     Log::info('Some rows failed during employee import', ['failed_rows' => $import->failedRows]);
+            // Check if there are failed rows
+            if (count($import->failedRows) > 0) {
+                \Log::info('Some rows failed during employee import', ['failed_rows' => $import->failedRows]);
 
-            //     $fileName = 'failed_rows_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+                $fileName = 'excel/failed_rows_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
-            //     return Excel::download(
-            //         new FailedUsersExport($import->failedRows),
-            //         $fileName
-            //     );
-            // }
+                // return Excel::download(new EmployeeTemplateExport(), 'employee_import_template.xlsx');
+                // return Excel::download(
+                //     new FailedUsersExport($import->failedRows),
+                //     $fileName
+                // );
+                Excel::store(
+                    new FailedUsersExport($import->failedRows),
+                    $fileName,
+                    'public'
+                );
 
+                // return response()->json([
+                //     'success' => false,
+                //     'message' => 'Some rows failed validation',
+                //     'download_url' => Storage::url($fileName),
+                // ], 200);
+                return redirect()
+                    ->back()
+                    ->with('error', 'employee_create_failed' . Storage::url($fileName))
+                    ->withInput();
+            }
 
             return redirect()->route('hr.employees.index')->with('success', __('Employee Upload successfully'));
         } catch (\Exception $e) {
