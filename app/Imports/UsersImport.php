@@ -85,16 +85,16 @@ class UsersImport implements ToModel, WithChunkReading, WithBatchInserts, WithHe
 
                 $name = data_get($row, 'name');
 
-                // $user = User::firstOrCreate(
-                //     ['email' => $email],
-                //     [
-                //         'name'       => $name,
-                //         'type'       => 'employee',
-                //         'password'   => Hash::make('password'),
-                //         'created_by' => $this->createdBy,
-                //     ]
-                // );
                 if ($this->bulkMode === 'add') {
+                    $employeeExists = Employee::where('employee_id', $row['employee'])->first();
+                    $userExists = Employee::where('employee_id', $row['employee'])->first();
+                    if ($userExists) {
+                        throw new \Exception("Employee already exists waith email $email.");
+                    }
+                    if ($employeeExists) {
+                        throw new \Exception("Employee already exists waith employee code {$row['employee']}.");
+                    }
+
                     $user = User::create([
                         'name'       => $name,
                         'email'      => $email,

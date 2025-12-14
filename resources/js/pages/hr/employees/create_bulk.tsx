@@ -32,9 +32,22 @@ export default function EmployeeCreate() {
       forceFormData: true,
       onSuccess: (page) => {
         setIsSubmitting(false);
+        const error = page?.props?.flash?.error;
+        console.log("*****************",error)
+        let failedData = false;
+        if (error) {
+          const errorArray = error.split("employee_create_failed");
+          if (errorArray.length > 1) {
+            console.log("----------",errorArray[1])
+            failedData = true;
+            window.open(errorArray[1], '_blank', 'noopener,noreferrer');
+          }
+        }
         if (page.props.flash.success) {
           toast.success(t(page.props.flash.success));
           router.get(route('hr.employees.index'));
+        } else if(failedData) {
+          toast.info(t("Some record failed to upload. please check in failed excel report"));
         } else if (page.props.flash.error) {
           toast.error(t(page.props.flash.error));
         }
