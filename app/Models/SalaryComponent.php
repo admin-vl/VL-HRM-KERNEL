@@ -13,6 +13,7 @@ class SalaryComponent extends BaseModel
         'name',
         'description',
         'type',
+        'recurring_type',
         'calculation_type',
         'default_amount',
         'percentage_of_basic',

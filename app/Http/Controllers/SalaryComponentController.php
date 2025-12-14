@@ -32,6 +32,10 @@ class SalaryComponentController extends Controller
             $query->where('calculation_type', $request->calculation_type);
         }
 
+        if ($request->has('recurring_type') && !empty($request->recurring_type) && $request->recurring_type !== 'all') {
+            $query->where('recurring_type', $request->recurring_type);
+        }
+
         // Handle status filter
         if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
             $query->where('status', $request->status);
@@ -57,7 +61,8 @@ class SalaryComponentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|in:earning,deduction',
+            'type' => 'required|in:earning,deduction,reimbursement',
+            'recurring_type' => 'required|in:recurring,non-recurring',
             'calculation_type' => 'required|in:fixed,percentage',
             'default_amount' => 'required_if:calculation_type,fixed|nullable|numeric|min:0',
             'percentage_of_basic' => 'required_if:calculation_type,percentage|nullable|numeric|min:0|max:100',
@@ -70,6 +75,7 @@ class SalaryComponentController extends Controller
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['is_taxable'] = $validated['is_taxable'] ?? true;
         $validated['is_mandatory'] = $validated['is_mandatory'] ?? false;
+        $validated['recurring_type'] = $validated['recurring_type'] ?? false;
 
         // Set default values based on calculation type
         if ($validated['calculation_type'] === 'fixed') {
@@ -103,7 +109,8 @@ class SalaryComponentController extends Controller
                 $validated = $request->validate([
                     'name' => 'required|string|max:255',
                     'description' => 'nullable|string',
-                    'type' => 'required|in:earning,deduction',
+                    'recurring_type' => 'required|in:recurring,non-recurring',
+                    'type' => 'required|in:earning,deduction,reimbursement',
                     'calculation_type' => 'required|in:fixed,percentage',
                     'default_amount' => 'required_if:calculation_type,fixed|nullable|numeric|min:0',
                     'percentage_of_basic' => 'required_if:calculation_type,percentage|nullable|numeric|min:0|max:100',
