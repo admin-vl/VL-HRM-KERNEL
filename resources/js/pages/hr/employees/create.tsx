@@ -446,13 +446,13 @@ export default function EmployeeCreate() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="branch_id">{t('Branch')}</Label>
+                <Label htmlFor="branch_id">{t('Location')}</Label>
                 <Select
                   value={formData.branch_id}
                   onValueChange={(value) => handleChange('branch_id', value)}
                 >
                   <SelectTrigger className={errors.branch_id ? 'border-red-500' : ''}>
-                    <SelectValue placeholder={t('Select Branch')} />
+                    <SelectValue placeholder={t('Select Location')} />
                   </SelectTrigger>
                   <SelectContent>
                     {branches.map((branch: any) => (
@@ -473,7 +473,7 @@ export default function EmployeeCreate() {
                   disabled={!formData.branch_id}
                 >
                   <SelectTrigger className={errors.department_id ? 'border-red-500' : ''}>
-                    <SelectValue placeholder={formData.branch_id ? t('Select Department') : t('Select Branch First')} />
+                    <SelectValue placeholder={formData.branch_id ? t('Select Department') : t('Select Location First')} />
                   </SelectTrigger>
                   <SelectContent>
                     {filteredDepartments.map((department: any) => (

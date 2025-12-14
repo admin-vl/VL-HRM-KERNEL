@@ -392,8 +392,8 @@ export default function Branches() {
               label: t('Type'),
               type: 'select',
               options: [
-                { value: 'fix', label: t('fix') },
-                { value: 'percent', label: t('percent') }
+                { value: 'fix', label: t('Fix') },
+                { value: 'percent', label: t('Percent') }
               ],
               defaultValue: 'fix',
               conditional: (mode, data) => data?.welfare_status === true,
