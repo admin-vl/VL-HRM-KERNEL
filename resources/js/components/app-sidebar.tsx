@@ -49,24 +49,24 @@ export function AppSidebar() {
         },
 
 
-        {
-            title: t('Plans'),
-            icon: CreditCard,
-            children: [
-                {
-                    title: t('Plan'),
-                    href: route('plans.index')
-                },
-                {
-                    title: t('Plan Request'),
-                    href: route('plan-requests.index')
-                },
-                {
-                    title: t('Plan Orders'),
-                    href: route('plan-orders.index')
-                }
-            ]
-        },
+        // {
+        //     title: t('Plans'),
+        //     icon: CreditCard,
+        //     children: [
+        //         {
+        //             title: t('Plan'),
+        //             href: route('plans.index')
+        //         },
+        //         {
+        //             title: t('Plan Request'),
+        //             href: route('plan-requests.index')
+        //         },
+        //         {
+        //             title: t('Plan Orders'),
+        //             href: route('plan-orders.index')
+        //         }
+        //     ]
+        // },
         {
             title: t('Coupons'),
             href: route('coupons.index'),
@@ -823,8 +823,6 @@ export function AppSidebar() {
             });
         }
 
-
-
         if (payrollChildren.length > 0) {
             items.push({
                 title: t('Payroll Management'),
@@ -833,36 +831,117 @@ export function AppSidebar() {
             });
         }
 
-        // Plans section
-        const planChildren = [];
-        if (hasPermission(permissions, 'manage-plans')) {
-            planChildren.push({
-                title: t('Plans'),
-                href: route('plans.index')
+        // Contract Management as separate menu
+        const reportChildren = [];
+
+        if (hasPermission(permissions, 'manage-contract-types')) {
+            reportChildren.push({
+                title: t('Salary Register'),
+                href: '#'
             });
         }
 
-        if (hasPermission(permissions, 'view-plan-requests')) {
-            planChildren.push({
-                title: t('Plan Requests'),
-                href: route('plan-requests.index')
+        if (hasPermission(permissions, 'manage-employee-contracts')) {
+            reportChildren.push({
+                title: t('Monthly Payslips'),
+                href: '#'
             });
         }
 
-        if (hasPermission(permissions, 'view-plan-orders')) {
-            planChildren.push({
-                title: t('Plan Orders'),
-                href: route('plan-orders.index')
+        if (hasPermission(permissions, 'manage-contract-renewals')) {
+            reportChildren.push({
+                title: t('Head Count Report'),
+                href: '#'
             });
         }
 
-        if (planChildren.length > 0) {
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('All Compliance Report'),
+                href: '#'
+            });
+        }
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('Bank Transfer Formats'),
+                href: '#'
+            });
+        }
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('Full & Final Settlement Report'),
+                href: '#'
+            });
+        }
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('Variance Report'),
+                href: '#'
+            });
+        }
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('Reimbursement Report'),
+                href: '#'
+            });
+        }
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('PF txt.file Uploader'),
+                href: '#'
+            });
+        }
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('Exit Employee Uploader'),
+                href: '#'
+            });
+        }
+        if (hasPermission(permissions, 'manage-contract-templates')) {
+            reportChildren.push({
+                title: t('TDS Quarterly Return Data'),
+                href: '#'
+            });
+        }
+
+        if (reportChildren.length > 0) {
             items.push({
-                title: t('Plans'),
-                icon: CreditCard,
-                children: planChildren
+                title: t('Reports'),
+                icon: FileText,
+                children: reportChildren
             });
         }
+
+        // Plans section
+        // const planChildren = [];
+        // if (hasPermission(permissions, 'manage-plans')) {
+        //     planChildren.push({
+        //         title: t('Plans'),
+        //         href: route('plans.index')
+        //     });
+        // }
+
+        // if (hasPermission(permissions, 'view-plan-requests')) {
+        //     planChildren.push({
+        //         title: t('Plan Requests'),
+        //         href: route('plan-requests.index')
+        //     });
+        // }
+
+        // if (hasPermission(permissions, 'view-plan-orders')) {
+        //     planChildren.push({
+        //         title: t('Plan Orders'),
+        //         href: route('plan-orders.index')
+        //     });
+        // }
+
+        // if (planChildren.length > 0) {
+        //     items.push({
+        //         title: t('Plans'),
+        //         icon: CreditCard,
+        //         children: planChildren
+        //     });
+        // }
 
         if (hasPermission(permissions, 'manage-referral')) {
             items.push({
