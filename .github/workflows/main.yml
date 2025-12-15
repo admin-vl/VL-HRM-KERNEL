@@ -39,11 +39,12 @@ jobs:
           ls -la
 
       # ✅ Laravel build environment (ROOT project now)
-      - name: Setup Laravel environment for build
+      - name: Setup Laravel environment
         run: |
           mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views
-          cp .env.example .env
+          touch .env
 
+          echo "APP_NAME=Laravel" >> .env
           echo "APP_ENV=production" >> .env
           echo "APP_DEBUG=false" >> .env
           echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
@@ -57,7 +58,6 @@ jobs:
 
           echo "CACHE_STORE=file" >> .env
           echo "SESSION_DRIVER=file" >> .env
-
 
       - name: Install composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
