@@ -8,6 +8,23 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+      # 🔹 PLACE MYSQL SERVICE HERE
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel
+          MYSQL_USER: laravel
+          MYSQL_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -24,16 +41,23 @@ jobs:
       # ✅ Laravel build environment (ROOT project now)
       - name: Setup Laravel environment for build
         run: |
-          mkdir -p database storage/framework/cache/data storage/framework/sessions storage/framework/views
-          touch database/database.sqlite
-          touch .env
+          mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views
+          cp .env.example .env
+
           echo "APP_ENV=production" >> .env
           echo "APP_DEBUG=false" >> .env
           echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
-          echo "DB_CONNECTION=sqlite" >> .env
-          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_DATABASE=laravel" >> .env
+          echo "DB_USERNAME=laravel" >> .env
+          echo "DB_PASSWORD=secret" >> .env
+
           echo "CACHE_STORE=file" >> .env
           echo "SESSION_DRIVER=file" >> .env
+
 
       - name: Install composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
