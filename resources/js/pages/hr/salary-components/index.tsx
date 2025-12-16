@@ -492,8 +492,6 @@ export default function SalaryComponents() {
         onSubmit={handleFormSubmit}
         formConfig={{
           fields: [
-            { name: 'name', label: t('Component Name'), type: 'text', required: true },
-            { name: 'description', label: t('Description'), type: 'textarea' },
             {
               name: 'recurring_type',
               label: t('Recurring Type'),
@@ -501,6 +499,8 @@ export default function SalaryComponents() {
               required: true,
               options: recurringType
             },
+            { name: 'name', label: t('Component Name'), type: 'text', required: true },
+            { name: 'description', label: t('Description'), type: 'textarea' },
             {
               name: 'type',
               label: t('Type'),
@@ -520,8 +520,25 @@ export default function SalaryComponents() {
             },
             { name: 'default_amount', label: t('Fixed Amount'), type: 'number', min: 0, step: 0.01 },
             { name: 'percentage_of_basic', label: t('Percentage of Basic'), type: 'number', min: 0, max: 100, step: 0.01 },
-            { name: 'is_taxable', label: t('Is Taxable'), type: 'checkbox', defaultValue: true },
-            { name: 'is_mandatory', label: t('Is Mandatory'), type: 'checkbox', defaultValue: false },
+            // { name: 'is_taxable', label: t('Is Taxable'), type: 'checkbox', defaultValue: true },
+            // { name: 'is_mandatory', label: t('Is Mandatory'), type: 'checkbox', defaultValue: false },
+            {
+              name: 'is_taxable',
+              label: t('Is Taxable'),
+              type: 'checkbox',
+              defaultValue: true,
+              row: 6,
+              width: '48%'
+            },
+            {
+              name: 'is_mandatory',
+              label: t('Is Mandatory'),
+              type: 'checkbox',
+              defaultValue: false,
+              row: 6,
+              width: '48%'
+            },
+
             {
               name: 'status',
               label: t('Status'),
