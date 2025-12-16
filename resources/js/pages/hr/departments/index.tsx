@@ -229,7 +229,7 @@ export default function Departments() {
     },
     {
       key: 'branch',
-      label: t('Branch'),
+      label: t('Location'),
       render: (value: any, row: any) => {
         return row.branch?.name || '-';
       }
@@ -297,7 +297,7 @@ export default function Departments() {
 
   // Prepare branch options for filter and form
   const branchOptions = [
-    { value: 'all', label: t('All Branches') },
+    { value: 'all', label: t('All Locations') },
     ...(branches || []).map((branch: any) => ({
       value: branch.id.toString(),
       label: branch.name
@@ -328,7 +328,7 @@ export default function Departments() {
           filters={[
             {
               name: 'branch_id',
-              label: t('Branch'),
+              label: t('Location'),
               type: 'select',
               value: selectedBranch,
               onChange: setSelectedBranch,
@@ -403,7 +403,7 @@ export default function Departments() {
             { name: 'name', label: t('Department Name'), type: 'text', required: true },
             {
               name: 'branch_id',
-              label: t('Branch'),
+              label: t('Location'),
               type: 'select',
               required: true,
               options: branches ? branches.map((branch: any) => ({

@@ -78,11 +78,11 @@ export function AppSidebar() {
             href: route('currencies.index'),
             icon: DollarSign,
         },
-        {
-            title: t('Referral Program'),
-            href: route('referral.index'),
-            icon: Gift,
-        },
+        // {
+        //     title: t('Referral Program'),
+        //     href: route('referral.index'),
+        //     icon: Gift,
+        // },
         {
             title: t('Landing Page'),
             icon: Palette,
@@ -943,13 +943,13 @@ export function AppSidebar() {
         //     });
         // }
 
-        if (hasPermission(permissions, 'manage-referral')) {
-            items.push({
-                title: t('Referral Program'),
-                href: route('referral.index'),
-                icon: Gift,
-            });
-        }
+        // if (hasPermission(permissions, 'manage-referral')) {
+        //     items.push({
+        //         title: t('Referral Program'),
+        //         href: route('referral.index'),
+        //         icon: Gift,
+        //     });
+        // }
 
         // Currencies - only show in non-SaaS mode for company users
         if (!isSaas && hasPermission(permissions, 'manage-currencies')) {
