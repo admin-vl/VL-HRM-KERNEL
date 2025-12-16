@@ -89,7 +89,7 @@ export default function Branches() {
 
   const handleFormSubmit = (formData: any) => {
     if (formMode === 'create') {
-      toast.loading(t('Creating branch...'));
+      toast.loading(t('Creating location...'));
 
       router.post(route('hr.branches.store'), formData, {
         onSuccess: (page) => {
@@ -106,12 +106,12 @@ export default function Branches() {
           if (typeof errors === 'string') {
             toast.error(t(errors));
           } else {
-            toast.error(t('Failed to create branch: {{errors}}', { errors: Object.values(errors).join(', ') }));
+            toast.error(t('Failed to create location: {{errors}}', { errors: Object.values(errors).join(', ') }));
           }
         }
       });
     } else if (formMode === 'edit') {
-      toast.loading(t('Updating branch...'));
+      toast.loading(t('Updating location...'));
 
       router.put(route('hr.branches.update', currentItem.id), formData, {
         onSuccess: (page) => {
@@ -128,7 +128,7 @@ export default function Branches() {
           if (typeof errors === 'string') {
             toast.error(t(errors));
           } else {
-            toast.error(t('Failed to update branch: {{errors}}', { errors: Object.values(errors).join(', ') }));
+            toast.error(t('Failed to update location: {{errors}}', { errors: Object.values(errors).join(', ') }));
           }
         }
       });
@@ -136,7 +136,7 @@ export default function Branches() {
   };
 
   const handleDeleteConfirm = () => {
-    toast.loading(t('Deleting branch...'));
+    toast.loading(t('Deleting location...'));
 
     router.delete(route('hr.branches.destroy', currentItem.id), {
       onSuccess: (page) => {
@@ -153,7 +153,7 @@ export default function Branches() {
         if (typeof errors === 'string') {
           toast.error(t(errors));
         } else {
-          toast.error(t('Failed to delete branch: {{errors}}', { errors: Object.values(errors).join(', ') }));
+          toast.error(t('Failed to delete location: {{errors}}', { errors: Object.values(errors).join(', ') }));
         }
       }
     });
@@ -161,7 +161,7 @@ export default function Branches() {
 
   const handleToggleStatus = (branch: any) => {
     const newStatus = branch.status === 'active' ? 'inactive' : 'active';
-    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} branch...`);
+    toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} location...`);
 
     router.put(route('hr.branches.toggle-status', branch.id), {}, {
       onSuccess: (page) => {
@@ -177,7 +177,7 @@ export default function Branches() {
         if (typeof errors === 'string') {
           toast.error(t(errors));
         } else {
-          toast.error(t('Failed to update branch status: {{errors}}', { errors: Object.values(errors).join(', ') }));
+          toast.error(t('Failed to update location status: {{errors}}', { errors: Object.values(errors).join(', ') }));
         }
       }
     });
@@ -356,7 +356,7 @@ export default function Branches() {
           to={branches?.to || 0}
           total={branches?.total || 0}
           links={branches?.links}
-          entityName={t("branches")}
+          entityName={t("locations")}
           onPageChange={(url) => router.get(url)}
         />
       </div>
