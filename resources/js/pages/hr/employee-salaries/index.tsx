@@ -93,10 +93,14 @@ export default function EmployeeSalaries() {
     }
   };
 
+  // const handleAddNew = () => {
+  //   setCurrentItem(null);
+  //   setFormMode('create');
+  //   setIsFormModalOpen(true);
+  // };
+
   const handleAddNew = () => {
-    setCurrentItem(null);
-    setFormMode('create');
-    setIsFormModalOpen(true);
+    router.get(route('hr.employee-salaries.create'));
   };
 
   const handleFormSubmit = (formData: any) => {

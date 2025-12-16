@@ -97,6 +97,40 @@ class EmployeeSalaryController extends Controller
         ]);
     }
 
+    /**
+     * Show the form for creating a new plan
+     */
+    public function create()
+    {
+        $employees = User::where('type', 'employee')
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->get(['id', 'name']);
+
+        // Get salary components for form
+        $salaryComponents = SalaryComponent::where('status', 'active')
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->get(['id', 'name', 'type', 'recurring_type', 'calculation_type', 'default_amount', 'percentage_of_basic']);
+
+        [$recurringComponents, $nonRecurringComponents] = $salaryComponents->partition(
+            fn($item) => $item->recurring_type === 'recurring'
+        );
+        // $recurringComponents = $salaryComponents->filter(
+        //     fn($item) => $item->recurring_type === 'recurring'
+        // );
+
+        // $nonRecurringComponents = $salaryComponents->filter(
+        //     fn($item) => $item->recurring_type !== 'recurring'
+        // );
+
+        // dd($recurringComponents);
+
+        return Inertia::render('hr/employee-salaries/create', [
+            'employees' => $employees,
+            'recurringSalaryComponents' => $recurringComponents->values(),
+            'nonRecurringSalaryComponents' => $nonRecurringComponents->values(),
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -207,7 +241,7 @@ class EmployeeSalaryController extends Controller
 
             // Get payroll runs for this employee
             $payrollRuns = \App\Models\PayrollRun::whereIn('created_by', getCompanyAndUsersId())
-                ->whereHas('payrollEntries', function($query) use ($employeeSalary) {
+                ->whereHas('payrollEntries', function ($query) use ($employeeSalary) {
                     $query->where('employee_id', $employeeSalary->employee_id);
                 })
                 ->orderBy('pay_period_end', 'desc')
@@ -276,9 +310,9 @@ class EmployeeSalaryController extends Controller
 
         // Get attendance records for the payroll period
         $attendanceRecords = \App\Models\AttendanceRecord::where('employee_id', $employeeSalary->employee_id)
-        ->whereBetween('date', [$payrollRun->pay_period_start, $payrollRun->pay_period_end])
-        ->orderBy('date')
-        ->get();
+            ->whereBetween('date', [$payrollRun->pay_period_start, $payrollRun->pay_period_end])
+            ->orderBy('date')
+            ->get();
 
         // Calculate attendance summary from payroll entry
         $attendanceSummary = [

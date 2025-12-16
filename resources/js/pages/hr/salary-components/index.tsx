@@ -240,11 +240,11 @@ export default function SalaryComponents() {
       key: 'recurring_type',
       label: t('Recurring Type'),
       render: (value: string) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'earning'
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${value === 'recurring'
           ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
           : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
           }`}>
-          {value === 'recurring' ? t('Recurring Type') : t('Non Recurring')}
+          {value === 'recurring' ? t('Recurring') : t('Non Recurring')}
         </span>
       )
     },
