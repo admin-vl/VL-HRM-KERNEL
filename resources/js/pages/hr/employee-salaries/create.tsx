@@ -24,12 +24,61 @@ export default function EmployeeSalaryCreate() {
         basic_salary: '',
         is_active: false,
         notes: '',
-        components: []
+        components: [],
+        recurring_components_salary: [],
+        nonrecurring_components: [],
+        nonrecurring_components_salary: []
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (name: string, value: any) => {
+        if (name === "components") {
+            const prevValues = formData.components;
+
+            const added = value.filter(v => !prevValues.includes(v));
+            const removed = prevValues.filter(v => !value.includes(v));
+
+            const recurring_components_salary: any = formData.recurring_components_salary || [];
+            if (added && added.length > 0) {
+                const component = recurringSalaryComponents.find(comp => comp.id == added[0]);
+                if (component) {
+                    const amount = component.calculation_type == "percentage" ? component.percentage_of_basic : component.default_amount
+                    recurring_components_salary.push({ id: component.id, amount: amount, name: component.name, type: component.type, calculation_type: component.calculation_type })
+
+                    setFormData(prev => ({ ...prev, recurring_components_salary: recurring_components_salary }));
+                }
+            }
+
+            if (removed && removed.length > 0) {
+                const remainingComponents = recurring_components_salary.filter(comp => comp.id != removed[0]);
+                setFormData(prev => ({ ...prev, recurring_components_salary: remainingComponents }));
+            }
+        }
+
+        if (name === "nonrecurring_components") {
+            const prevValues = formData.nonrecurring_components;
+
+            const added = value.filter(v => !prevValues.includes(v));
+            const removed = prevValues.filter(v => !value.includes(v));
+
+            const nonrecurring_components_salary: any = formData.nonrecurring_components_salary || [];
+            if (added && added.length > 0) {
+                const component = nonRecurringSalaryComponents.find(comp => comp.id == added[0]);
+                if (component) {
+                    const amount = component.calculation_type == "percentage" ? component.percentage_of_basic : component.default_amount
+                    nonrecurring_components_salary.push({ id: component.id, amount: amount, name: component.name, type: component.type, calculation_type: component.calculation_type })
+
+                    setFormData(prev => ({ ...prev, nonrecurring_components_salary: nonrecurring_components_salary }));
+                }
+            }
+
+            if (removed && removed.length > 0) {
+                const remainingComponents = nonrecurring_components_salary.filter(comp => comp.id != removed[0]);
+                setFormData(prev => ({ ...prev, nonrecurring_components_salary: remainingComponents }));
+            }
+        }
+        
         setFormData(prev => ({ ...prev, [name]: value }));
 
         // Clear error when field is changed
@@ -47,22 +96,7 @@ export default function EmployeeSalaryCreate() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Create form data for submission
-        const submitData = new FormData();
-
-        // Add all form fields
-        Object.entries(formData).forEach(([key, value]) => {
-            if (key !== 'documents') {
-                if (value !== null && value !== undefined && value !== '') {
-                    submitData.append(key, value);
-                }
-            }
-        });
-
-
-        // Submit the form
-        router.post(route('hr.employees.store'), submitData, {
-            forceFormData: true,
+        router.post(route('hr.employee-salaries.store'), formData, {
             onSuccess: (page) => {
                 setIsSubmitting(false);
                 if (page.props.flash.success) {
@@ -155,7 +189,7 @@ export default function EmployeeSalaryCreate() {
                                     placeholder={t("Supporting text for your headline")}
                                     rows={3}
                                     className="border-gray-200 resize-none"
-                                    // style={{ '--tw-ring-color': brandColor + '33' } as React.CSSProperties}
+                                // style={{ '--tw-ring-color': brandColor + '33' } as React.CSSProperties}
                                 />
                                 {/* <Input
                                     id="notes"
@@ -231,10 +265,45 @@ export default function EmployeeSalaryCreate() {
                             </div> */}
 
                         </div>
+                        {
+                            formData.components && formData.components.length > 0
+                            &&
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {
+                                    formData.recurring_components_salary.map((item: any, index: number) => {
+                                        return <div className="space-y-2" key={`rec_${index}`}>
+                                            <Label htmlFor={`recurring_components_salary_${item.id}`}>{`${item.name} (${item.type}) ${item.calculation_type == 'percentage' ? '%' : 'Rs'}`}</Label>
+                                            <Input
+                                                id={`recurring_components_salary_${item.id}`}
+                                                value={item.amount ?? ''}
+                                                readOnly
+                                                // onChange={(e) => handleChange('recurring_components_salary', e.target.value)}
+                                                className={errors.grade ? 'border-red-500' : ''}
+                                            />
+                                            {errors.grade && <p className="text-red-500 text-xs">{errors.grade}</p>}
+                                        </div>
+                                    })
+                                }
+
+                            </div>
+                        }
+                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="grade">{t('Grade')}</Label>
+                                <Input
+                                    id="grade"
+                                    value={formData.grade}
+                                    onChange={(e) => handleChange('grade', e.target.value)}
+                                    className={errors.grade ? 'border-red-500' : ''}
+                                />
+                                {errors.grade && <p className="text-red-500 text-xs">{errors.grade}</p>}
+                            </div>
+
+                        </div> */}
                     </CardContent>
                 </Card>
 
-                 <Card>
+                <Card>
                     <CardHeader>
                         <CardTitle>{t('Non Recurring Salary Components')}</CardTitle>
                     </CardHeader>
@@ -261,6 +330,28 @@ export default function EmployeeSalaryCreate() {
                             </div>
 
                         </div>
+                        {
+                            formData.nonrecurring_components && formData.nonrecurring_components.length > 0
+                            &&
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {
+                                    formData.nonrecurring_components_salary.map((item: any, index: number) => {
+                                        return <div className="space-y-2" key={`rec_${index}`}>
+                                            <Label htmlFor={`nonrecurring_components_salary_${item.id}`}>{`${item.name} (${item.type}) ${item.calculation_type == 'percentage' ? '%' : 'Rs'}`}</Label>
+                                            <Input
+                                                id={`nonrecurring_components_salary_${item.id}`}
+                                                value={item.amount ?? ''}
+                                                readOnly
+                                                // onChange={(e) => handleChange('nonrecurring_components_salary', e.target.value)}
+                                                className={errors.grade ? 'border-red-500' : ''}
+                                            />
+                                            {errors.grade && <p className="text-red-500 text-xs">{errors.grade}</p>}
+                                        </div>
+                                    })
+                                }
+
+                            </div>
+                        }
                     </CardContent>
                 </Card>
 
