@@ -100,4 +100,25 @@ class EmployeeSalary extends BaseModel
             'net_salary' => $totalEarnings - $totalDeductions,
         ];
     }
+
+    public function salaryComponents()
+    {
+        return $this->belongsToMany(
+            SalaryComponent::class,
+            'employee_salary_components',
+            'employee_salary_id',
+            'salary_components_id'
+        )
+        ->withPivot(['amount', 'type'])
+        ->withTimestamps();
+    }
+
+    public function employeeSalaryComponents()
+    {
+        return $this->hasMany(
+            EmployeeSalaryComponent::class,
+            "employee_salary_id",
+            "id"
+        );
+    }
 }

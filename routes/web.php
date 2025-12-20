@@ -1042,6 +1042,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         Route::middleware('permission:manage-employee-salaries')->group(function () {
             Route::get('hr/employee-salaries', [\App\Http\Controllers\EmployeeSalaryController::class, 'index'])->name('hr.employee-salaries.index');
             Route::get('hr/employee-salaries/create', [\App\Http\Controllers\EmployeeSalaryController::class, 'create'])->middleware('permission:create-employee-salaries')->name('hr.employee-salaries.create');
+            Route::get('hr/employee-salaries/{employeeSalaryId}/edit', [\App\Http\Controllers\EmployeeSalaryController::class, 'edit'])->middleware('permission:edit-employee-salaries')->name('hr.employee-salaries.edit');
             Route::post('hr/employee-salaries', [\App\Http\Controllers\EmployeeSalaryController::class, 'store'])->middleware('permission:create-employee-salaries')->name('hr.employee-salaries.store');
             Route::put('hr/employee-salaries/{employeeSalary}', [\App\Http\Controllers\EmployeeSalaryController::class, 'update'])->middleware('permission:edit-employee-salaries')->name('hr.employee-salaries.update');
             Route::delete('hr/employee-salaries/{employeeSalary}', [\App\Http\Controllers\EmployeeSalaryController::class, 'destroy'])->middleware('permission:delete-employee-salaries')->name('hr.employee-salaries.destroy');

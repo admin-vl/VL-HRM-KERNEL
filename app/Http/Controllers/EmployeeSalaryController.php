@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmployeeSalary;
+use App\Models\EmployeeSalaryComponent;
 use App\Models\SalaryComponent;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -136,8 +137,9 @@ class EmployeeSalaryController extends Controller
         $validated = $request->validate([
             'employee_id' => 'required|exists:users,id',
             'basic_salary' => 'required|numeric|min:0',
-            'components' => 'nullable|array',
-            'components.*' => 'exists:salary_components,id',
+            'recurring_components_salary' => 'nullable|array',
+            'nonrecurring_components_salary' => 'nullable|array',
+            // 'components.*' => 'exists:salary_components,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -153,12 +155,94 @@ class EmployeeSalaryController extends Controller
         $validated['created_by'] = creatorId();
         $validated['is_active'] = true;
 
-        EmployeeSalary::create($validated);
+        $employeeSalary = EmployeeSalary::create($validated);
+        foreach ($request->recurring_components_salary as $recurring) {
+            EmployeeSalaryComponent::create([
+                'employee_salary_id' => $employeeSalary->id,
+                'salary_components_id' => $recurring['id'],
+                'amount' => $recurring['amount'],
+                'type' => 1
+            ]);
+        }
+
+        foreach ($request->nonrecurring_components_salary as $nonRecurring) {
+            EmployeeSalaryComponent::create([
+                'employee_salary_id' => $employeeSalary->id,
+                'salary_components_id' => $nonRecurring['id'],
+                'amount' => $nonRecurring['amount'],
+                'type' => 2
+            ]);
+        }
 
         return redirect()->back()->with('success', __('Employee salary created successfully.'));
     }
 
+    public function edit($id)
+    {
 
+        $employeeSalary = EmployeeSalary::with('salaryComponents')->find($id);
+
+        $recurringComponents = $employeeSalary->salaryComponents
+            ->filter(fn($component) => $component->pivot->type == 1)
+            ->map(fn($component) => [
+                'id' => $component->id,
+                'amount' => $component->pivot->amount,
+                'name' => $component->name,
+                // add other needed fields
+            ])
+            ->values(); // reset keys
+
+        $nonRecurringComponents = $employeeSalary->salaryComponents
+            ->filter(fn($component) => $component->pivot->type == 2)
+            ->map(fn($component) => [
+                'id' => $component->id,
+                'amount' => $component->pivot->amount,
+                'name' => $component->name,
+                // add other needed fields
+            ])
+            ->values();
+
+        $employeeSalary->nonrecurring_components_salary = $nonRecurringComponents;
+        $employeeSalary->recurring_components_salary = $recurringComponents;
+
+        $employeeSalary->recurring_components = $employeeSalary->salaryComponents
+            ->filter(fn($component) => $component->pivot->type == 1)
+            ->pluck('id')
+            ->map(fn($id) => (string) $id)  // convert to string
+            ->values()
+            ->all();
+
+        $employeeSalary->nonrecurring_components = $employeeSalary->salaryComponents
+            ->filter(fn($component) => $component->pivot->type == 2)
+            ->pluck('id')
+            ->map(fn($id) => (string) $id)  // convert to string
+            ->values()
+            ->all();
+
+
+        // dd($employeeSalary);
+
+        // dd($employeeSalary->employeeSalaryComponents);
+        $employees = User::where('type', 'employee')
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->get(['id', 'name']);
+
+        // Get salary components for form
+        $salaryComponents = SalaryComponent::where('status', 'active')
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->get(['id', 'name', 'type', 'recurring_type', 'calculation_type', 'default_amount', 'percentage_of_basic']);
+
+        [$recurringComponents, $nonRecurringComponents] = $salaryComponents->partition(
+            fn($item) => $item->recurring_type === 'recurring'
+        );
+
+        return Inertia::render('hr/employee-salaries/edit', [
+            'employees' => $employees,
+            'recurringSalaryComponents' => $recurringComponents->values(),
+            'nonRecurringSalaryComponents' => $nonRecurringComponents->values(),
+            'employeeSalary' => $employeeSalary
+        ]);
+    }
 
     public function update(Request $request, $employeeSalaryId)
     {
@@ -171,13 +255,34 @@ class EmployeeSalaryController extends Controller
                 $validated = $request->validate([
                     'employee_id' => 'required|exists:users,id',
                     'basic_salary' => 'required|numeric|min:0',
-                    'components' => 'nullable|array',
-                    'components.*' => 'exists:salary_components,id',
+                    // 'components' => 'nullable|array',
+                    // 'components.*' => 'exists:salary_components,id',
+                    'recurring_components_salary' => 'nullable|array',
+                    'nonrecurring_components_salary' => 'nullable|array',
                     'is_active' => 'boolean',
                     'notes' => 'nullable|string',
                 ]);
 
                 $employeeSalary->update($validated);
+
+                $recurring = collect($request->input('recurring_components_salary', []))
+                    ->mapWithKeys(fn($item) => [
+                        (string) $item['id'] => [  // cast to string
+                            'amount' => $item['amount'],
+                            'type'   => 1,
+                        ]
+                    ]);
+
+                $nonRecurring = collect($request->input('nonrecurring_components_salary', []))
+                    ->mapWithKeys(fn($item) => [
+                        (string) $item['id'] => [  // cast to string
+                            'amount' => $item['amount'],
+                            'type'   => 2,
+                        ]
+                    ]);
+                $allComponents = $recurring->union($nonRecurring)->toArray();
+
+                $employeeSalary->salaryComponents()->sync($allComponents);
 
                 return redirect()->back()->with('success', __('Employee salary updated successfully'));
             } catch (\Exception $e) {

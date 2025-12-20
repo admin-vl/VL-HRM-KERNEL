@@ -16,18 +16,18 @@ import { Textarea } from '@/components/ui/textarea';
 
 export default function EmployeeSalaryCreate() {
     const { t } = useTranslation();
-    const { employees, recurringSalaryComponents, nonRecurringSalaryComponents } = usePage().props as any;
+    const { employees, recurringSalaryComponents, nonRecurringSalaryComponents, employeeSalary } = usePage().props as any;
 
     // State
     const [formData, setFormData] = useState<Record<string, any>>({
-        employee_id: '',
-        basic_salary: '',
-        is_active: false,
-        notes: '',
-        components: [],
-        recurring_components_salary: [],
-        nonrecurring_components: [],
-        nonrecurring_components_salary: []
+        employee_id:  employeeSalary.employee_id ? employeeSalary.employee_id.toString() : '',
+        basic_salary: employeeSalary.basic_salary,
+        is_active: employeeSalary.is_active,
+        notes: employeeSalary.notes,
+        components: employeeSalary.recurring_components || [],
+        nonrecurring_components: employeeSalary.nonrecurring_components || [],
+        recurring_components_salary: employeeSalary.recurring_components_salary || [],
+        nonrecurring_components_salary: employeeSalary.nonrecurring_components_salary || []
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,7 +78,7 @@ export default function EmployeeSalaryCreate() {
                 setFormData(prev => ({ ...prev, nonrecurring_components_salary: remainingComponents }));
             }
         }
-        
+
         setFormData(prev => ({ ...prev, [name]: value }));
 
         // Clear error when field is changed
@@ -96,7 +96,7 @@ export default function EmployeeSalaryCreate() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        router.post(route('hr.employee-salaries.store'), formData, {
+        router.put(route('hr.employee-salaries.update', employeeSalary.id), formData, {
             onSuccess: (page) => {
                 setIsSubmitting(false);
                 if (page.props.flash.success) {
@@ -113,31 +113,25 @@ export default function EmployeeSalaryCreate() {
         });
     };
 
-    // const breadcrumbs = [
-    //     { title: t('Dashboard'), href: route('dashboard') },
-    //     { title: t('HR Management'), href: route('hr.employee-salaries.index') },
-    //     { title: t('Employees'), href: route('hr.employee-salaries.index') },
-    //     { title: t('Create Employee') }
-    // ];
     const breadcrumbs = [
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('Payroll Management'), href: route('hr.employee-salaries.index') },
         { title: t('Employee Salaries'), href: route('hr.employee-salaries.index') },
-        { title: t('Create Employee Salary') }
+        { title: t('Edit Employee Salary') }
     ];
 
     const handleNonRecurringComponentChange = (amount: any, row: any) => {
-        setFormData(prev => ({ ...prev, nonrecurring_components_salary: prev.nonrecurring_components_salary.map(item => item.id == row.id ? ({...item, amount }) : item) }));
+        setFormData(prev => ({ ...prev, nonrecurring_components_salary: prev.nonrecurring_components_salary.map(item => item.id == row.id ? ({ ...item, amount }) : item) }));
     }
 
     const handleRecurringComponentChange = (amount: any, row: any) => {
-        setFormData(prev => ({ ...prev, recurring_components_salary: prev.recurring_components_salary.map(item => item.id == row.id ? ({...item, amount }) : item) }));
+        setFormData(prev => ({ ...prev, recurring_components_salary: prev.recurring_components_salary.map(item => item.id == row.id ? ({ ...item, amount }) : item) }));
     }
 
     return (
         <PageTemplate
             title={t("Create Employee Salary")}
-            url="/hr/employee-salaries/create"
+            url="/hr/employee-salaries/edit"
             breadcrumbs={breadcrumbs}
             actions={[
                 {
@@ -375,7 +369,7 @@ export default function EmployeeSalaryCreate() {
                         type="submit"
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? t('Saving...') : t('Save Employee Salary')}
+                        {isSubmitting ? t('Saving...') : t('Update Employee Salary')}
                     </Button>
                 </div>
             </form>

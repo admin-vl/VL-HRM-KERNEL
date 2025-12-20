@@ -78,8 +78,9 @@ export default function EmployeeSalaries() {
         setIsFormModalOpen(true);
         break;
       case 'edit':
-        setFormMode('edit');
-        setIsFormModalOpen(true);
+        // setFormMode('edit');
+        router.get(route('hr.employee-salaries.edit', item.id));
+        // setIsFormModalOpen(true);
         break;
       case 'delete':
         setIsDeleteModalOpen(true);
