@@ -14,7 +14,7 @@ class CheckInstallation
     public function handle(Request $request, Closure $next)
     {
         // Skip check for installer routes, API routes, and static assets
-        if ($request->is('install/*') ||
+        /*if ($request->is('install/*') ||
         $request->is('update/*') ||
         $request->is('css/*') ||
         $request->is('js/*') ||
@@ -36,7 +36,7 @@ class CheckInstallation
         // If logged in as superadmin and migrations needed, redirect to /update
         if (auth()->check() && auth()->user()->hasRole('superadmin') && $this->needsMigration()) {
             return redirect('/update');
-        }
+        }*/
 
         return $next($request);
     }

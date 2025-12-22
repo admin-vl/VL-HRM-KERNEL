@@ -434,7 +434,7 @@ export default function EmployeeSalaries() {
           onSort={handleSort}
           permissions={permissions}
           entityPermissions={{
-            view: 'view-employee-salaries',
+            // view: 'view-employee-salaries',
             create: 'create-employee-salaries',
             edit: 'edit-employee-salaries',
             delete: 'delete-employee-salaries'
