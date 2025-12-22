@@ -78,8 +78,9 @@ export default function EmployeeSalaries() {
         setIsFormModalOpen(true);
         break;
       case 'edit':
-        setFormMode('edit');
-        setIsFormModalOpen(true);
+        // setFormMode('edit');
+        router.get(route('hr.employee-salaries.edit', item.id));
+        // setIsFormModalOpen(true);
         break;
       case 'delete':
         setIsDeleteModalOpen(true);
@@ -93,10 +94,14 @@ export default function EmployeeSalaries() {
     }
   };
 
+  // const handleAddNew = () => {
+  //   setCurrentItem(null);
+  //   setFormMode('create');
+  //   setIsFormModalOpen(true);
+  // };
+
   const handleAddNew = () => {
-    setCurrentItem(null);
-    setFormMode('create');
-    setIsFormModalOpen(true);
+    router.get(route('hr.employee-salaries.create'));
   };
 
   const handleFormSubmit = (formData: any) => {
@@ -429,7 +434,7 @@ export default function EmployeeSalaries() {
           onSort={handleSort}
           permissions={permissions}
           entityPermissions={{
-            view: 'view-employee-salaries',
+            // view: 'view-employee-salaries',
             create: 'create-employee-salaries',
             edit: 'edit-employee-salaries',
             delete: 'delete-employee-salaries'
