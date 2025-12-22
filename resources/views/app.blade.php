@@ -8,7 +8,7 @@
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>
-        (function() {
+        (function () {
             const appearance = '{{ $appearance ?? 'system' }}';
 
             if (appearance === 'system') {
@@ -41,18 +41,20 @@
     @if (app()->environment('local'))
         @viteReactRefresh
     @endif
+
     @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+
     <script>
         // Ensure base URL is correctly set for assets
         window.baseUrl = '{{ url('/') }}';
 
         // Define asset helper function
-        window.asset = function(path) {
+        window.asset = function (path) {
             return "{{ asset('') }}" + path;
         };
-        
+
         // Define storage helper function
-        window.storage = function(path) {
+        window.storage = function (path) {
             return "{{ asset('storage') }}/" + path;
         };
 
@@ -69,7 +71,7 @@
     @inertiaHead
 </head>
 
-<body class="font-sans antialiased">
+<body class="font-sans antialiased tm-bs-mp">
     @inertia
 </body>
 
