@@ -134,7 +134,7 @@ export default function AuthLayout({
                 className="hidden lg:block lg:w-1/2 relative overflow-hidden"
                 style={{ backgroundColor: primaryColor }}
             >
-               <img src={'screenshots/saas/login_green.jpeg'} alt="Logo" className="h-full object-cover" />
+                 <img src={'screenshots/saas/login img 1.png'} alt="Logo" className="h-full object-cover" />
             </div>
             <CookieConsentBanner />
         </div>

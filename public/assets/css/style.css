@@ -407,7 +407,7 @@ textarea.form-control {
   background-color: var(--theme-color-dark);
 }
 .dark-layout .preloader:after {
-  background-image: url(../images/logo.png);
+  background-image: url(../logos/VL\ -\ dark.svg);
 }
 .dark-layout .sticky-header {
   background-color: var(--theme-color-dark);
@@ -579,7 +579,7 @@ figure.image {
   background-repeat: no-repeat;
   -webkit-animation: pulse 1s infinite linear;
           animation: pulse 1s infinite linear;
-  background-image: url(../images/favicon.png);
+  background-image:  url(../logos/VL\ -\ dark.svg);
   content: "";
 }
 .preloader:before {
@@ -597,7 +597,7 @@ figure.image {
   font-family: var(--title-font);
   letter-spacing: 2px;
   text-transform: uppercase;
-  content: "Loading";
+  content: "Loading...";
   -webkit-transition: none;
   transition: none;
 }
