@@ -315,7 +315,7 @@ export default function Landing() {
                     Streamline HR operations, automate payroll, track attendance, and manage employees effortlessly from a single platform.
                   </p>
                   <div className="btn-wrp">
-                    <a className="btn-one-rounded wow fadeInUp" data-wow-delay="600ms" data-wow-duration="1500ms" href="{route('register')}">
+                    <a className="btn-one-rounded wow fadeInUp" data-wow-delay="600ms" data-wow-duration="1500ms" href={route('register')}>
                       Get Started
                     </a>
                     <h6 className="btn-title wow fadeInUp" data-wow-delay="700ms" data-wow-duration="1500ms">
