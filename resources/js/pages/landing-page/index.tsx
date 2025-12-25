@@ -171,9 +171,9 @@ export default function Landing() {
                         <a href="#">+61 406 817 182</a>
                       </div>
                     </div>
-                    <a className="btn-one" href={route('login')}>
-                      Login
-                    </a>
+                     <a className="btn-one-rounded wow fadeInUp" style={{ marginRight: '10px' }} href={route('login')}>
+                                        Login
+                      </a>
                   </div>
                   {/* <!-- Mobile Nav toggler --> */}
                 </div>
@@ -914,7 +914,7 @@ export default function Landing() {
                       Get in touch
                     </h6>
                     <h2 className="title wow splt-txt" data-splitting>
-                      Book An Appointment
+                      Book A Demo
                     </h2>
                     <p className="text wow fadeInUp" data-wow-delay="200ms" data-wow-duration="1500ms">
                       By submitting this form you are agrecing to our Privacy Policy, <br /> We guarantee not to disclose your information.
