@@ -22,7 +22,8 @@ export function useFavicon() {
     } else {
       // Simple path, add full storage path
       const baseUrl = (window as any).baseUrl || window.location.origin;
-      faviconUrl = `${baseUrl}/storage/media/${favicon.replace(/^\//, '')}`;
+      faviconUrl = `${baseUrl}/assets/logos/VL - dark.svg`;
+      // faviconUrl = `${baseUrl}/storage/media/${favicon.replace(/^\//, '')}`;
     }
 
     // Update favicon in document head
