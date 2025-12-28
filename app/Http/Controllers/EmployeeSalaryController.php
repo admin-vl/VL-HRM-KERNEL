@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\EmployeeSalaryTemplateExport;
+use App\Imports\EmployeeSalaryImport;
 use App\Models\EmployeeSalary;
 use App\Models\EmployeeSalaryComponent;
 use App\Models\SalaryComponent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
 
 class EmployeeSalaryController extends Controller
 {
@@ -188,6 +194,7 @@ class EmployeeSalaryController extends Controller
                 'id' => $component->id,
                 'amount' => $component->pivot->amount,
                 'name' => $component->name,
+                'type' => $component->type
                 // add other needed fields
             ])
             ->values(); // reset keys
@@ -198,6 +205,7 @@ class EmployeeSalaryController extends Controller
                 'id' => $component->id,
                 'amount' => $component->pivot->amount,
                 'name' => $component->name,
+                'type' => $component->type
                 // add other needed fields
             ])
             ->values();
@@ -501,5 +509,73 @@ class EmployeeSalaryController extends Controller
         $summary['unpaid_leave_days'] = $summary['absent_days'] + ($summary['half_days'] * 0.5);
 
         return $summary;
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new EmployeeSalaryTemplateExport(), 'employee_salary_import_template.xlsx');
+    }
+
+    public function create_bulk()
+    {
+        return Inertia::render('hr/employee-salaries/create_bulk');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function bulkCreate(Request $request)
+    {
+        try {
+            // Validate basic information
+            $validator = Validator::make($request->all(), [
+                'bulk_file' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+
+            $file = $request->file('bulk_file');
+            $bulkMode = $request->input('bulk_mode'); // 'add' or 'update'
+
+            $headerRow      = (new HeadingRowImport())->toArray($file)[0][0];
+            $actualHeadings = array_map('trim', array_values($headerRow));
+
+            $requiredHeadings = [
+                'employee',
+                'basic_salary',
+                'recurring_salary',
+                'non_recurring_salary'
+            ];
+
+            $missing = array_diff($requiredHeadings, $actualHeadings);
+
+            if (!empty($missing)) {
+                return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missing))->withInput();
+            }
+
+            // Create User model object
+            $import = new EmployeeSalaryImport($bulkMode);
+            Excel::import($import, $file);
+
+            // Check if there are failed rows
+            // if (count($import->failedRows) > 0) {
+            //     \Log::info('Some rows failed during employee import', ['failed_rows' => $import->failedRows]);
+
+            //     $fileName = 'excel/failed_rows_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+            //     return redirect()
+            //         ->back()
+            //         ->with('error', 'employee_create_failed' . Storage::url($fileName))
+            //         ->withInput();
+            // }
+
+            return redirect()->route('hr.employees.index')->with('success', __('Employee Upload successfully'));
+        } catch (\Exception $e) {
+            \Log::error('Employee creation failed: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', __('Failed to create employee: :message', ['message' => $e->getMessage()]))->withInput();
+        }
     }
 }

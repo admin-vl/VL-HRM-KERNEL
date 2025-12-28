@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import React from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudFormModal } from '@/components/CrudFormModal';
@@ -102,6 +102,10 @@ export default function EmployeeSalaries() {
 
   const handleAddNew = () => {
     router.get(route('hr.employee-salaries.create'));
+  };
+
+  const handleBulkUpload = () => {
+    router.get(route('hr.employee-salaries.create_bulk'));
   };
 
   const handleFormSubmit = (formData: any) => {
@@ -240,6 +244,13 @@ export default function EmployeeSalaries() {
       variant: 'default',
       onClick: () => handleAddNew()
     });
+
+    pageActions.push({
+      label: t('Bulk Upload '),
+      icon: <Upload className="mr-2 h-4 w-4" />,
+      variant: 'secondary',
+      onClick: () => handleBulkUpload(),
+    });
   }
 
   const breadcrumbs = [
@@ -280,8 +291,8 @@ export default function EmployeeSalaries() {
                     <span
                       key={index}
                       className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${isEarning
-                          ? 'bg-green-50 text-green-700 ring-green-700/10'
-                          : 'bg-red-50 text-red-700 ring-red-700/10'
+                        ? 'bg-green-50 text-green-700 ring-green-700/10'
+                        : 'bg-red-50 text-red-700 ring-red-700/10'
                         }`}
                     >
                       {name}
