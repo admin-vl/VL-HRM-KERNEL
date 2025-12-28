@@ -1051,6 +1051,11 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             Route::get('hr/employee-salaries/{employeeSalary}/payroll/{payrollRun}', [\App\Http\Controllers\EmployeeSalaryController::class, 'getPayrollCalculation'])->middleware('permission:view-employee-salaries')->name('hr.employee-salaries.get-payroll-calculation');
         });
 
+        // Monthly Salaries routes
+        Route::middleware('permission:manage-employee-salaries')->group(function () {
+            Route::get('hr/monthly-salary', [\App\Http\Controllers\MonthlySalaryController::class, 'index'])->name('hr.monthly-salary.index');
+        });
+
         // Payroll Runs routes
         Route::middleware('permission:manage-payroll-runs')->group(function () {
             Route::get('hr/payroll-runs', [\App\Http\Controllers\PayrollRunController::class, 'index'])->name('hr.payroll-runs.index');

@@ -81,7 +81,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles className="h-6 w-6 text-primary" />
           <CardTitle className="text-2xl">
-            {t('Features')}
+            {t('Highlights')}
           </CardTitle>
         </div>
         <p className="text-muted-foreground">
