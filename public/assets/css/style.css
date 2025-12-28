@@ -54,9 +54,9 @@ License: copyright commercial
   --theme-color-black: #000000;
   --theme-color-black-rgb: 0, 0, 0;
   --theme-color-silver: #C4C4C4;
-  --theme-color1: #c6d936;
+  --theme-color1: #b6b4b4;
   --theme-color1-rgb: 198, 217, 54;
-  --theme-color2: #1a4137;
+  --theme-color2: #36aaa4;
   --theme-color2-rgb: 26, 65, 55;
   --theme-color3: #102930;
   --theme-color3-rgb: 16, 41, 48;
@@ -566,6 +566,7 @@ figure.image {
   height: 100%;
   z-index: 999999;
   background-color: #ffffff;
+  transition: opacity 0.4s ease;
 }
 .preloader:after {
   position: absolute;
@@ -579,9 +580,15 @@ figure.image {
   background-repeat: no-repeat;
   -webkit-animation: pulse 1s infinite linear;
           animation: pulse 1s infinite linear;
-  background-image:  url(../logos/VL\ -\ dark.svg);
+  background-image: url(../logos/VL\ -\ dark.svg);
   content: "";
 }
+
+.preloader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .preloader:before {
   position: absolute;
   top: 50%;
@@ -1152,9 +1159,9 @@ section {
   display: inline-block;
   font-family: var(--title-font);
   background-color: var(--theme-color1);
-  color: var(--theme-color2);
+  color: black;
   text-align: center;
-  min-width: 208px;
+  min-width: 130px;
   max-width: 100%;
   width: -webkit-fit-content;
   width: -moz-fit-content;
@@ -13418,7 +13425,7 @@ CONTACT Details
   z-index: 1;
   background-color: var(--theme-color2);
   padding-top: 210px;
-  padding-bottom: 400px;
+  padding-bottom: 60px;
 }
 @media (max-width: 1399.98px) {
   .testimonial-section-four {

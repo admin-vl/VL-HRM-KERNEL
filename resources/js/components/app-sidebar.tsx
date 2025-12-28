@@ -809,6 +809,13 @@ export function AppSidebar() {
             });
         }
 
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
+            payrollChildren.push({
+                title: t('Monthly Salary Settlement'),
+                href: route('hr.monthly-salary.index')
+            });
+        }
+        
         if (hasPermission(permissions, 'manage-payroll-runs')) {
             payrollChildren.push({
                 title: t('Payroll Runs'),
