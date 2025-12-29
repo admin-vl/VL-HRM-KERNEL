@@ -204,14 +204,7 @@ class EmployeeController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        return Inertia::render('hr/employees/create_bulk', [
-            'branches' => $branches,
-            'departments' => $departments,
-            'designations' => $designations,
-            'documentTypes' => $documentTypes,
-            'shifts' => $shifts,
-            'attendancePolicies' => $attendancePolicies,
-        ]);
+        return Inertia::render('hr/employees/create_bulk');
     }
 
     /**
