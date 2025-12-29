@@ -1100,7 +1100,8 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <h5 className="tracking-tight flex items-center gap-2 text-lg font-semibold" >© 2025 <span style={{ color: '#36aaa4' }}>VL HRM</span></h5>
+                <h5 className="tracking-tight flex items-center gap-2 text-md font-semibold" >© 2025 <span style={{ color: '#36aaa4' }}>VL HRM</span></h5>
+                
                 {/* <NavFooter items={footerNavItems} className="mt-auto" position={position} /> */}
                 {/* Profile menu moved to header */}
             </SidebarFooter>
