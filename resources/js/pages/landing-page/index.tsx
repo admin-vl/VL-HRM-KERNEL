@@ -953,7 +953,7 @@ useEffect(() => {
                                 <div className="col-lg-12 text-center">
                                     <p className="text wow fadeInUp" data-wow-delay="00ms" data-wow-duration="1500ms">
                                         Still have questions?{' '}
-                                        <a href="page-contact.html" className="link-color">
+                                        <a href="#" className="link-color">
                                             Contact our support team
                                         </a>{' '}
                                         for additional assistance.
