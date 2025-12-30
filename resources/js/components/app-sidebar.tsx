@@ -1,24 +1,64 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
+import { useBrand } from '@/contexts/BrandContext';
 import { useLayout } from '@/contexts/LayoutContext';
 import { useSidebarSettings } from '@/contexts/SidebarContext';
-import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
-import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Mail as VCard, ChevronDown, Building2, Globe, Clock, Timer, Coins } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import AppLogo from './app-logo';
-import { useEffect, useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { hasPermission } from '@/utils/authorization';
-import { toast } from '@/components/custom-toast';
 import { getImagePath } from '@/utils/helpers';
-
+import { Link, usePage } from '@inertiajs/react';
+import {
+    Briefcase,
+    Calendar,
+    CalendarDays,
+    Clock,
+    Coins,
+    DollarSign,
+    FileText,
+    Folder,
+    Image,
+    LayoutGrid,
+    Palette,
+    Settings,
+    Timer,
+    Users,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function AppSidebar() {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filterNavItems = (items: NavItem[], query: string): NavItem[] => {
+        if (!query.trim()) return items;
+
+        const q = query.toLowerCase();
+
+        return items
+            .map((item) => {
+                const titleMatch = item.title.toLowerCase().includes(q);
+
+                if (item.children) {
+                    const filteredChildren = filterNavItems(item.children, query);
+
+                    if (titleMatch || filteredChildren.length > 0) {
+                        return {
+                            ...item,
+                            children: filteredChildren,
+                            defaultOpen: true, // auto expand
+                        };
+                    }
+                }
+
+                if (titleMatch) {
+                    return item;
+                }
+
+                return null;
+            })
+            .filter(Boolean) as NavItem[];
+    };
+
     const { t, i18n } = useTranslation();
     const { auth, globalSettings } = usePage().props as any;
     const userRole = auth.user?.type || auth.user?.role;
@@ -47,26 +87,6 @@ export function AppSidebar() {
             href: route('media-library'),
             icon: Image,
         },
-
-
-        // {
-        //     title: t('Plans'),
-        //     icon: CreditCard,
-        //     children: [
-        //         {
-        //             title: t('Plan'),
-        //             href: route('plans.index')
-        //         },
-        //         {
-        //             title: t('Plan Request'),
-        //             href: route('plan-requests.index')
-        //         },
-        //         {
-        //             title: t('Plan Orders'),
-        //             href: route('plan-orders.index')
-        //         }
-        //     ]
-        // },
         {
             title: t('Coupons'),
             href: route('coupons.index'),
@@ -89,13 +109,13 @@ export function AppSidebar() {
             children: [
                 {
                     title: t('Landing Page'),
-                    href: route('landing-page')
+                    href: route('landing-page'),
                 },
                 {
                     title: t('Custom Pages'),
-                    href: route('landing-page.custom-pages.index')
-                }
-            ]
+                    href: route('landing-page.custom-pages.index'),
+                },
+            ],
         },
         // {
         //     title: t('Email Templates'),
@@ -106,7 +126,7 @@ export function AppSidebar() {
             title: t('Settings'),
             href: route('settings'),
             icon: Settings,
-        }
+        },
     ];
 
     const getCompanyNavItems = (): NavItem[] => {
@@ -120,27 +140,25 @@ export function AppSidebar() {
             });
         }
 
-
-
         // Staff section - only show if user has any staff-related permissions
         const staffChildren = [];
         if (hasPermission(permissions, 'manage-users')) {
             staffChildren.push({
                 title: t('Users'),
-                href: route('users.index')
+                href: route('users.index'),
             });
         }
         if (hasPermission(permissions, 'manage-roles')) {
             staffChildren.push({
                 title: t('Roles'),
-                href: route('roles.index')
+                href: route('roles.index'),
             });
         }
         if (staffChildren.length > 0) {
             items.push({
                 title: t('Staff'),
                 icon: Users,
-                children: staffChildren
+                children: staffChildren,
             });
         }
 
@@ -151,61 +169,58 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-branches')) {
             hrChildren.push({
                 title: t('Locations'),
-                href: route('hr.branches.index')
+                href: route('hr.branches.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-departments')) {
             hrChildren.push({
                 title: t('Departments'),
-                href: route('hr.departments.index')
+                href: route('hr.departments.index'),
             });
         }
-
-
 
         if (hasPermission(permissions, 'manage-designations')) {
             hrChildren.push({
                 title: t('Designations'),
-                href: route('hr.designations.index')
+                href: route('hr.designations.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-document-types')) {
             hrChildren.push({
                 title: t('Document Types'),
-                href: route('hr.document-types.index')
+                href: route('hr.document-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-employees')) {
             hrChildren.push({
                 title: t('Employees'),
-                href: route('hr.employees.index')
+                href: route('hr.employees.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-award-types')) {
             hrChildren.push({
                 title: t('Award Types'),
-                href: route('hr.award-types.index')
+                href: route('hr.award-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-awards')) {
             hrChildren.push({
                 title: t('Awards'),
-                href: route('hr.awards.index')
+                href: route('hr.awards.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-promotions')) {
             hrChildren.push({
                 title: t('Promotions'),
-                href: route('hr.promotions.index')
+                href: route('hr.promotions.index'),
             });
         }
-
 
         // Performance Module
         const performanceChildren = [];
@@ -213,107 +228,105 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-performance-indicator-categories')) {
             performanceChildren.push({
                 title: t('Indicator Categories'),
-                href: route('hr.performance.indicator-categories.index')
+                href: route('hr.performance.indicator-categories.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-performance-indicators')) {
             performanceChildren.push({
                 title: t('Indicators'),
-                href: route('hr.performance.indicators.index')
+                href: route('hr.performance.indicators.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-goal-types')) {
             performanceChildren.push({
                 title: t('Goal Types'),
-                href: route('hr.performance.goal-types.index')
+                href: route('hr.performance.goal-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-employee-goals')) {
             performanceChildren.push({
                 title: t('Employee Goals'),
-                href: route('hr.performance.employee-goals.index')
+                href: route('hr.performance.employee-goals.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-review-cycles')) {
             performanceChildren.push({
                 title: t('Review Cycles'),
-                href: route('hr.performance.review-cycles.index')
+                href: route('hr.performance.review-cycles.index'),
             });
         }
-
-
 
         if (hasPermission(permissions, 'manage-employee-reviews')) {
             performanceChildren.push({
                 title: t('Employee Reviews'),
-                href: route('hr.performance.employee-reviews.index')
+                href: route('hr.performance.employee-reviews.index'),
             });
         }
 
         if (performanceChildren.length > 0) {
             hrChildren.push({
                 title: t('Performance'),
-                children: performanceChildren
+                children: performanceChildren,
             });
         }
 
         if (hasPermission(permissions, 'manage-resignations')) {
             hrChildren.push({
                 title: t('Resignations'),
-                href: route('hr.resignations.index')
+                href: route('hr.resignations.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-terminations')) {
             hrChildren.push({
                 title: t('Terminations'),
-                href: route('hr.terminations.index')
+                href: route('hr.terminations.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-warnings')) {
             hrChildren.push({
                 title: t('Warnings'),
-                href: route('hr.warnings.index')
+                href: route('hr.warnings.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-trips')) {
             hrChildren.push({
                 title: t('Trips'),
-                href: route('hr.trips.index')
+                href: route('hr.trips.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-complaints')) {
             hrChildren.push({
                 title: t('Complaints'),
-                href: route('hr.complaints.index')
+                href: route('hr.complaints.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-employee-transfers')) {
             hrChildren.push({
                 title: t('Transfers'),
-                href: route('hr.transfers.index')
+                href: route('hr.transfers.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-holidays')) {
             hrChildren.push({
                 title: t('Holidays'),
-                href: route('hr.holidays.index')
+                href: route('hr.holidays.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-announcements')) {
             hrChildren.push({
                 title: t('Announcements'),
-                href: route('hr.announcements.index')
+                href: route('hr.announcements.index'),
             });
         }
 
@@ -323,35 +336,35 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-asset-types')) {
             assetChildren.push({
                 title: t('Asset Types'),
-                href: route('hr.asset-types.index')
+                href: route('hr.asset-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-assets')) {
             assetChildren.push({
                 title: t('Assets'),
-                href: route('hr.assets.index')
+                href: route('hr.assets.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-assets')) {
             assetChildren.push({
                 title: t('Dashboard'),
-                href: route('hr.assets.dashboard')
+                href: route('hr.assets.dashboard'),
             });
         }
 
         if (hasPermission(permissions, 'manage-assets')) {
             assetChildren.push({
                 title: t('Depreciation'),
-                href: route('hr.assets.depreciation-report')
+                href: route('hr.assets.depreciation-report'),
             });
         }
 
         if (assetChildren.length > 0) {
             hrChildren.push({
                 title: t('Asset Management'),
-                children: assetChildren
+                children: assetChildren,
             });
         }
 
@@ -361,50 +374,45 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-training-types')) {
             trainingChildren.push({
                 title: t('Training Types'),
-                href: route('hr.training-types.index')
+                href: route('hr.training-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-training-programs')) {
             trainingChildren.push({
                 title: t('Training Programs'),
-                href: route('hr.training-programs.index')
+                href: route('hr.training-programs.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-training-sessions')) {
             trainingChildren.push({
                 title: t('Training Sessions'),
-                href: route('hr.training-sessions.index')
+                href: route('hr.training-sessions.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-employee-trainings')) {
             trainingChildren.push({
                 title: t('Employee Trainings'),
-                href: route('hr.employee-trainings.index')
+                href: route('hr.employee-trainings.index'),
             });
         }
-
 
         // end
 
         if (trainingChildren.length > 0) {
             hrChildren.push({
                 title: t('Training Management'),
-                children: trainingChildren
+                children: trainingChildren,
             });
         }
-
-
-
-
 
         if (hrChildren.length > 0) {
             items.push({
                 title: t('HR Management'),
                 icon: Briefcase,
-                children: hrChildren
+                children: hrChildren,
             });
         }
 
@@ -414,119 +422,119 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-job-categories')) {
             recruitmentChildren.push({
                 title: t('Job Categories'),
-                href: route('hr.recruitment.job-categories.index')
+                href: route('hr.recruitment.job-categories.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-job-requisitions')) {
             recruitmentChildren.push({
                 title: t('Job Requisitions'),
-                href: route('hr.recruitment.job-requisitions.index')
+                href: route('hr.recruitment.job-requisitions.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-job-types')) {
             recruitmentChildren.push({
                 title: t('Job Types'),
-                href: route('hr.recruitment.job-types.index')
+                href: route('hr.recruitment.job-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-job-locations')) {
             recruitmentChildren.push({
                 title: t('Job Locations'),
-                href: route('hr.recruitment.job-locations.index')
+                href: route('hr.recruitment.job-locations.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-job-postings')) {
             recruitmentChildren.push({
                 title: t('Job Postings'),
-                href: route('hr.recruitment.job-postings.index')
+                href: route('hr.recruitment.job-postings.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-candidate-sources')) {
             recruitmentChildren.push({
                 title: t('Candidate Sources'),
-                href: route('hr.recruitment.candidate-sources.index')
+                href: route('hr.recruitment.candidate-sources.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-candidates')) {
             recruitmentChildren.push({
                 title: t('Candidates'),
-                href: route('hr.recruitment.candidates.index')
+                href: route('hr.recruitment.candidates.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-interview-types')) {
             recruitmentChildren.push({
                 title: t('Interview Types'),
-                href: route('hr.recruitment.interview-types.index')
+                href: route('hr.recruitment.interview-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-interview-rounds')) {
             recruitmentChildren.push({
                 title: t('Interview Rounds'),
-                href: route('hr.recruitment.interview-rounds.index')
+                href: route('hr.recruitment.interview-rounds.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-interviews')) {
             recruitmentChildren.push({
                 title: t('Interviews'),
-                href: route('hr.recruitment.interviews.index')
+                href: route('hr.recruitment.interviews.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-interview-feedback')) {
             recruitmentChildren.push({
                 title: t('Interview Feedback'),
-                href: route('hr.recruitment.interview-feedback.index')
+                href: route('hr.recruitment.interview-feedback.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-candidate-assessments')) {
             recruitmentChildren.push({
                 title: t('Candidate Assessments'),
-                href: route('hr.recruitment.candidate-assessments.index')
+                href: route('hr.recruitment.candidate-assessments.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-offer-templates')) {
             recruitmentChildren.push({
                 title: t('Offer Templates'),
-                href: route('hr.recruitment.offer-templates.index')
+                href: route('hr.recruitment.offer-templates.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-offers')) {
             recruitmentChildren.push({
                 title: t('Offers'),
-                href: route('hr.recruitment.offers.index')
+                href: route('hr.recruitment.offers.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-onboarding-checklists')) {
             recruitmentChildren.push({
                 title: t('Onboarding Checklists'),
-                href: route('hr.recruitment.onboarding-checklists.index')
+                href: route('hr.recruitment.onboarding-checklists.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-checklist-items')) {
             recruitmentChildren.push({
                 title: t('Checklist Items'),
-                href: route('hr.recruitment.checklist-items.index')
+                href: route('hr.recruitment.checklist-items.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-candidate-onboarding')) {
             recruitmentChildren.push({
                 title: t('Candidate Onboarding'),
-                href: route('hr.recruitment.candidate-onboarding.index')
+                href: route('hr.recruitment.candidate-onboarding.index'),
             });
         }
 
@@ -534,7 +542,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Recruitment'),
                 icon: Users,
-                children: recruitmentChildren
+                children: recruitmentChildren,
             });
         }
 
@@ -544,30 +552,28 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-contract-types')) {
             contractChildren.push({
                 title: t('Contract Types'),
-                href: route('hr.contracts.contract-types.index')
+                href: route('hr.contracts.contract-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-employee-contracts')) {
             contractChildren.push({
                 title: t('Employee Contracts'),
-                href: route('hr.contracts.employee-contracts.index')
+                href: route('hr.contracts.employee-contracts.index'),
             });
         }
-
-
 
         if (hasPermission(permissions, 'manage-contract-renewals')) {
             contractChildren.push({
                 title: t('Contract Renewals'),
-                href: route('hr.contracts.contract-renewals.index')
+                href: route('hr.contracts.contract-renewals.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-contract-templates')) {
             contractChildren.push({
                 title: t('Contract Templates'),
-                href: route('hr.contracts.contract-templates.index')
+                href: route('hr.contracts.contract-templates.index'),
             });
         }
 
@@ -575,7 +581,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Contract Management'),
                 icon: FileText,
-                children: contractChildren
+                children: contractChildren,
             });
         }
 
@@ -585,30 +591,28 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-document-categories')) {
             documentChildren.push({
                 title: t('Document Categories'),
-                href: route('hr.documents.document-categories.index')
+                href: route('hr.documents.document-categories.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-hr-documents')) {
             documentChildren.push({
                 title: t('HR Documents'),
-                href: route('hr.documents.hr-documents.index')
+                href: route('hr.documents.hr-documents.index'),
             });
         }
-
-
 
         if (hasPermission(permissions, 'manage-document-acknowledgments')) {
             documentChildren.push({
                 title: t('Acknowledgments'),
-                href: route('hr.documents.document-acknowledgments.index')
+                href: route('hr.documents.document-acknowledgments.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-document-templates')) {
             documentChildren.push({
                 title: t('Document Templates'),
-                href: route('hr.documents.document-templates.index')
+                href: route('hr.documents.document-templates.index'),
             });
         }
 
@@ -616,11 +620,9 @@ export function AppSidebar() {
             items.push({
                 title: t('Document Management'),
                 icon: Folder,
-                children: documentChildren
+                children: documentChildren,
             });
         }
-
-
 
         // Meeting Management submenu
         const meetingChildren = [];
@@ -628,57 +630,52 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-meeting-types')) {
             meetingChildren.push({
                 title: t('Meeting Types'),
-                href: route('meetings.meeting-types.index')
+                href: route('meetings.meeting-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-meeting-rooms')) {
             meetingChildren.push({
                 title: t('Meeting Rooms'),
-                href: route('meetings.meeting-rooms.index')
+                href: route('meetings.meeting-rooms.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-meetings')) {
             meetingChildren.push({
                 title: t('Meetings'),
-                href: route('meetings.meetings.index')
+                href: route('meetings.meetings.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-meeting-attendees')) {
             meetingChildren.push({
                 title: t('Meeting Attendees'),
-                href: route('meetings.meeting-attendees.index')
+                href: route('meetings.meeting-attendees.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-meeting-minutes')) {
             meetingChildren.push({
                 title: t('Meeting Minutes'),
-                href: route('meetings.meeting-minutes.index')
+                href: route('meetings.meeting-minutes.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-action-items')) {
             meetingChildren.push({
                 title: t('Action Items'),
-                href: route('meetings.action-items.index')
+                href: route('meetings.action-items.index'),
             });
         }
-
-
 
         if (meetingChildren.length > 0) {
             items.push({
                 title: t('Meetings'),
                 icon: Calendar,
-                children: meetingChildren
+                children: meetingChildren,
             });
         }
-
-
-
 
         if (hasPermission(permissions, 'view-calendar') || hasPermission(permissions, 'manage-calendar')) {
             items.push({
@@ -702,28 +699,28 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-leave-types')) {
             leaveChildren.push({
                 title: t('Leave Types'),
-                href: route('hr.leave-types.index')
+                href: route('hr.leave-types.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-leave-policies')) {
             leaveChildren.push({
                 title: t('Leave Policies'),
-                href: route('hr.leave-policies.index')
+                href: route('hr.leave-policies.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-leave-applications')) {
             leaveChildren.push({
                 title: t('Leave Applications'),
-                href: route('hr.leave-applications.index')
+                href: route('hr.leave-applications.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-leave-balances')) {
             leaveChildren.push({
                 title: t('Leave Balances'),
-                href: route('hr.leave-balances.index')
+                href: route('hr.leave-balances.index'),
             });
         }
 
@@ -731,7 +728,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Leave Management'),
                 icon: CalendarDays,
-                children: leaveChildren
+                children: leaveChildren,
             });
         }
 
@@ -741,28 +738,28 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-shifts')) {
             attendanceChildren.push({
                 title: t('Shifts'),
-                href: route('hr.shifts.index')
+                href: route('hr.shifts.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-attendance-policies')) {
             attendanceChildren.push({
                 title: t('Attendance Policies'),
-                href: route('hr.attendance-policies.index')
+                href: route('hr.attendance-policies.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-attendance-records')) {
             attendanceChildren.push({
                 title: t('Attendance Records'),
-                href: route('hr.attendance-records.index')
+                href: route('hr.attendance-records.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-attendance-regularizations')) {
             attendanceChildren.push({
                 title: t('Attendance Regularizations'),
-                href: route('hr.attendance-regularizations.index')
+                href: route('hr.attendance-regularizations.index'),
             });
         }
 
@@ -770,7 +767,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Attendance Management'),
                 icon: Clock,
-                children: attendanceChildren
+                children: attendanceChildren,
             });
         }
 
@@ -780,7 +777,7 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-time-entries')) {
             timeTrackingChildren.push({
                 title: t('Time Entries'),
-                href: route('hr.time-entries.index')
+                href: route('hr.time-entries.index'),
             });
         }
 
@@ -788,7 +785,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Time Tracking'),
                 icon: Timer,
-                children: timeTrackingChildren
+                children: timeTrackingChildren,
             });
         }
 
@@ -798,35 +795,34 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-salary-components')) {
             payrollChildren.push({
                 title: t('Salary Components'),
-                href: route('hr.salary-components.index')
+                href: route('hr.salary-components.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-employee-salaries')) {
             payrollChildren.push({
                 title: t('Employee Salaries'),
-                href: route('hr.employee-salaries.index')
+                href: route('hr.employee-salaries.index'),
             });
         }
-
         if (hasPermission(permissions, 'manage-employee-salaries')) {
             payrollChildren.push({
                 title: t('Monthly Salary Settlement'),
-                href: route('hr.monthly-salary.index')
+                href: route('hr.monthly-salary.index'),
             });
         }
-        
+
         if (hasPermission(permissions, 'manage-payroll-runs')) {
             payrollChildren.push({
                 title: t('Payroll Runs'),
-                href: route('hr.payroll-runs.index')
+                href: route('hr.payroll-runs.index'),
             });
         }
 
         if (hasPermission(permissions, 'manage-payslips')) {
             payrollChildren.push({
                 title: t('Payslips'),
-                href: route('hr.payslips.index')
+                href: route('hr.payslips.index'),
             });
         }
 
@@ -834,7 +830,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Payroll Management'),
                 icon: DollarSign,
-                children: payrollChildren
+                children: payrollChildren,
             });
         }
 
@@ -844,70 +840,70 @@ export function AppSidebar() {
         if (hasPermission(permissions, 'manage-contract-types')) {
             reportChildren.push({
                 title: t('Salary Register'),
-                href: '#'
+                href: '#',
             });
         }
 
         if (hasPermission(permissions, 'manage-employee-contracts')) {
             reportChildren.push({
                 title: t('Monthly Payslips'),
-                href: '#'
+                href: '#',
             });
         }
 
         if (hasPermission(permissions, 'manage-contract-renewals')) {
             reportChildren.push({
                 title: t('Head Count Report'),
-                href: '#'
+                href: '#',
             });
         }
 
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('All Compliance Report'),
-                href: '#'
+                href: '#',
             });
         }
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('Bank Transfer Formats'),
-                href: '#'
+                href: '#',
             });
         }
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('Full & Final Settlement Report'),
-                href: '#'
+                href: '#',
             });
         }
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('Variance Report'),
-                href: '#'
+                href: '#',
             });
         }
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('Reimbursement Report'),
-                href: '#'
+                href: '#',
             });
         }
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('PF txt.file Uploader'),
-                href: '#'
+                href: '#',
             });
         }
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('Exit Employee Uploader'),
-                href: '#'
+                href: '#',
             });
         }
         if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('TDS Quarterly Return Data'),
-                href: '#'
+                href: '#',
             });
         }
 
@@ -915,7 +911,7 @@ export function AppSidebar() {
             items.push({
                 title: t('Reports'),
                 icon: FileText,
-                children: reportChildren
+                children: reportChildren,
             });
         }
 
@@ -967,7 +963,6 @@ export function AppSidebar() {
             });
         }
 
-
         // Landing Page - only show in non-SaaS mode for company users
         if (!isSaas && hasPermission(permissions, 'manage-landing-page')) {
             items.push({
@@ -976,13 +971,13 @@ export function AppSidebar() {
                 children: [
                     {
                         title: t('Landing Page'),
-                        href: route('landing-page')
+                        href: route('landing-page'),
                     },
                     {
                         title: t('Custom Pages'),
-                        href: route('landing-page.custom-pages.index')
-                    }
-                ]
+                        href: route('landing-page.custom-pages.index'),
+                    },
+                ],
             });
         }
 
@@ -1005,14 +1000,13 @@ export function AppSidebar() {
     const [sidebarStyle, setSidebarStyle] = useState({});
 
     useEffect(() => {
-
         // Apply styles based on sidebar style
         if (style === 'colored') {
             setSidebarStyle({ backgroundColor: 'var(--primary)', color: 'white' });
         } else if (style === 'gradient') {
             setSidebarStyle({
                 background: 'linear-gradient(to bottom, var(--primary), color-mix(in srgb, var(--primary), transparent 20%))',
-                color: 'white'
+                color: 'white',
             });
         } else {
             setSidebarStyle({});
@@ -1035,17 +1029,12 @@ export function AppSidebar() {
     };
 
     return (
-        <Sidebar
-            side={effectivePosition}
-            collapsible={collapsible}
-            variant={variant}
-            className={style !== 'plain' ? 'sidebar-custom-style' : ''}
-        >
+        <Sidebar side={effectivePosition} collapsible={collapsible} variant={variant} className={style !== 'plain' ? 'sidebar-custom-style' : ''}>
             <SidebarHeader className={style !== 'plain' ? 'sidebar-styled' : ''} style={sidebarStyle}>
-                <div className="flex justify-center items-center p-2">
+                <div className="flex items-center justify-center p-2">
                     <Link href={getFirstAvailableHref()} prefetch className="flex items-center justify-center">
                         {/* Logo for expanded sidebar */}
-                        <div className="h-12 group-data-[collapsible=icon]:hidden flex items-center">
+                        <div className="flex h-12 items-center group-data-[collapsible=icon]:hidden">
                             {(() => {
                                 const isDark = document.documentElement.classList.contains('dark');
                                 const currentLogo = isDark ? logoLight : logoDark;
@@ -1060,15 +1049,13 @@ export function AppSidebar() {
                                         onError={() => updateBrandSettings({ [isDark ? 'logoLight' : 'logoDark']: '' })}
                                     />
                                 ) : (
-                                    <div className="h-12 text-inherit font-semibold flex items-center text-lg tracking-tight">
-                                        WorkDo
-                                    </div>
+                                    <div className="flex h-12 items-center text-lg font-semibold tracking-tight text-inherit">WorkDo</div>
                                 );
                             })()}
                         </div>
 
                         {/* Icon for collapsed sidebar */}
-                        <div className="h-8 w-8 hidden group-data-[collapsible=icon]:block">
+                        <div className="hidden h-8 w-8 group-data-[collapsible=icon]:block">
                             {(() => {
                                 const displayFavicon = favicon ? getImagePath(favicon) : '';
 
@@ -1081,7 +1068,7 @@ export function AppSidebar() {
                                         onError={() => updateBrandSettings({ favicon: '' })}
                                     />
                                 ) : (
-                                    <div className="h-8 w-8 bg-primary text-white rounded flex items-center justify-center font-bold shadow-sm">
+                                    <div className="bg-primary flex h-8 w-8 items-center justify-center rounded font-bold text-white shadow-sm">
                                         W
                                     </div>
                                 );
@@ -1094,14 +1081,26 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
+                {/* Search Bar */}
+                <div className="p-2">
+                    <input
+                        type="text"
+                        placeholder="Search menu..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    />
+                </div>
+
                 <div style={sidebarStyle} className={`h-full ${style !== 'plain' ? 'sidebar-styled' : ''}`}>
-                    <NavMain items={filteredNavItems} position={effectivePosition} />
+                    <NavMain items={filterNavItems(mainNavItems, searchQuery)} position={effectivePosition} />
                 </div>
             </SidebarContent>
 
             <SidebarFooter>
-                <h5 className="tracking-tight flex items-center gap-2 text-md font-semibold" >© 2025 <span style={{ color: '#36aaa4' }}>VL HRM</span></h5>
-                
+                <h5 className="text-md flex items-center gap-2 font-semibold tracking-tight">
+                    © 2025 <span style={{ color: '#36aaa4' }}>VL HRM</span>
+                </h5>
                 {/* <NavFooter items={footerNavItems} className="mt-auto" position={position} /> */}
                 {/* Profile menu moved to header */}
             </SidebarFooter>
