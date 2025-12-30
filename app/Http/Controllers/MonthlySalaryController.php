@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\EmployeeMonthlySalaryTemplateExport;
+use App\Imports\EmployeeMonthlySalaryImport;
 use App\Models\EmployeeSalary;
 use App\Models\SalaryComponent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
 
 class MonthlySalaryController extends Controller
 {
@@ -172,195 +178,71 @@ class MonthlySalaryController extends Controller
         }
     }
 
-    public function toggleStatus($employeeSalaryId)
+    public function downloadTemplate()
     {
-        $employeeSalary = EmployeeSalary::where('id', $employeeSalaryId)
-            ->whereIn('created_by', getCompanyAndUsersId())
-            ->first();
-
-        if ($employeeSalary) {
-            try {
-                $employeeSalary->is_active = !$employeeSalary->is_active;
-                $employeeSalary->save();
-
-                return redirect()->back()->with('success', __('Employee salary status updated successfully'));
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to update employee salary status'));
-            }
-        } else {
-            return redirect()->back()->with('error', __('Employee salary Not Found.'));
-        }
+        return Excel::download(new EmployeeMonthlySalaryTemplateExport(), 'employee_monthly_settlement_template.xlsx');
     }
 
-    public function showPayroll($employeeSalaryId)
+    public function create_bulk()
+    {
+        return Inertia::render('hr/monthly-salary/create_bulk');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function bulkCreate(Request $request)
     {
         try {
-            $employeeSalary = EmployeeSalary::where('id', $employeeSalaryId)
-                ->whereIn('created_by', getCompanyAndUsersId())
-                ->with('employee')
-                ->first();
-
-            if (!$employeeSalary) {
-                return redirect()->route('hr.employee-salaries.index')
-                    ->with('error', __('Employee salary record not found.'));
-            }
-
-            // Get payroll runs for this employee
-            $payrollRuns = \App\Models\PayrollRun::whereIn('created_by', getCompanyAndUsersId())
-                ->whereHas('payrollEntries', function($query) use ($employeeSalary) {
-                    $query->where('employee_id', $employeeSalary->employee_id);
-                })
-                ->orderBy('pay_period_end', 'desc')
-                ->get(['id', 'title', 'pay_period_start', 'pay_period_end', 'status']);
-
-            if ($payrollRuns->isEmpty()) {
-                return redirect()->route('hr.employee-salaries.index')
-                    ->with('error', __('No payroll runs found for this employee.'));
-            }
-
-            // Get the latest payroll run
-            $latestPayrollRun = $payrollRuns->first();
-
-            return Inertia::render('hr/employee-salaries/payroll-calculation', [
-                'employeeSalary' => $employeeSalary,
-                'payrollRuns' => $payrollRuns,
-                'selectedPayrollRun' => $latestPayrollRun,
-                'payrollData' => $this->getPayrollCalculationData($employeeSalary, $latestPayrollRun)
+            // Validate basic information
+            $validator = Validator::make($request->all(), [
+                'bulk_file' => 'required'
             ]);
-        } catch (\Exception $e) {
-            return redirect()->route('hr.employee-salaries.index')
-                ->with('error', __('Failed to load payroll calculation.'));
-        }
-    }
 
-    public function getPayrollCalculation($employeeSalaryId, $payrollRunId)
-    {
-        try {
-            $employeeSalary = EmployeeSalary::where('id', $employeeSalaryId)
-                ->whereIn('created_by', getCompanyAndUsersId())
-                ->with('employee')
-                ->first();
-
-            $payrollRun = \App\Models\PayrollRun::where('id', $payrollRunId)
-                ->whereIn('created_by', getCompanyAndUsersId())
-                ->first();
-
-            if (!$employeeSalary || !$payrollRun) {
-                return response()->json(['error' => 'Record not found'], 404);
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
             }
 
-            $payrollData = $this->getPayrollCalculationData($employeeSalary, $payrollRun);
+            $file = $request->file('bulk_file');
+            $bulkMode = $request->input('bulk_mode'); // 'add' or 'update'
 
-            return response()->json($payrollData);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to calculate payroll'], 500);
-        }
-    }
+            $headerRow      = (new HeadingRowImport())->toArray($file)[0][0];
+            $actualHeadings = array_map('trim', array_values($headerRow));
 
-    private function getPayrollCalculationData($employeeSalary, $payrollRun)
-    {
-        // Get payroll entry for this employee and payroll run
-        $payrollEntry = \App\Models\PayrollEntry::where('employee_id', $employeeSalary->employee_id)
-            ->where('payroll_run_id', $payrollRun->id)
-            ->first();
-
-        if (!$payrollEntry) {
-            return [
-                'payrollEntry' => null,
-                'salaryBreakdown' => ['earnings' => [], 'deductions' => []],
-                'attendanceSummary' => [],
-                'payrollCalculation' => ['net_salary' => 0, 'total_earnings' => 0, 'total_deductions' => 0],
-                'attendanceRecords' => []
+            $requiredHeadings = [
+                'employee',
+                'amount',
+                'salary_component',
+                'notes'
             ];
-        }
 
-        // Get attendance records for the payroll period
-        $attendanceRecords = \App\Models\AttendanceRecord::where('employee_id', $employeeSalary->employee_id)
-        ->whereBetween('date', [$payrollRun->pay_period_start, $payrollRun->pay_period_end])
-        ->orderBy('date')
-        ->get();
+            $missing = array_diff($requiredHeadings, $actualHeadings);
 
-        // Calculate attendance summary from payroll entry
-        $attendanceSummary = [
-            'total_working_days' => $payrollEntry->working_days,
-            'present_days' => $payrollEntry->present_days,
-            'absent_days' => $payrollEntry->absent_days,
-            'half_days' => $payrollEntry->half_days,
-            'leave_days' => $payrollEntry->paid_leave_days,
-            'holiday_days' => $payrollEntry->holiday_days,
-            'overtime_hours' => $payrollEntry->overtime_hours,
-            'unpaid_leave_days' => $payrollEntry->unpaid_leave_days,
-            'unpaid_leave_from_leave' => $payrollEntry->unpaid_leave_days - $payrollEntry->absent_days - ($payrollEntry->half_days * 0.5)
-        ];
-
-        // Get salary breakdown from payroll entry
-        $salaryBreakdown = [
-            'earnings' => is_array($payrollEntry->earnings_breakdown) ? $payrollEntry->earnings_breakdown : json_decode($payrollEntry->earnings_breakdown ?? '{}', true),
-            'deductions' => is_array($payrollEntry->deductions_breakdown) ? $payrollEntry->deductions_breakdown : json_decode($payrollEntry->deductions_breakdown ?? '{}', true)
-        ];
-
-        $payrollCalculation = [
-            'net_salary' => $payrollEntry->net_pay,
-            'total_earnings' => $payrollEntry->total_earnings,
-            'total_deductions' => $payrollEntry->total_deductions,
-            'per_day_salary' => $payrollEntry->per_day_salary ?? 0,
-            'overtime_amount' => $payrollEntry->overtime_amount ?? 0
-        ];
-
-        return [
-            'payrollEntry' => $payrollEntry,
-            'salaryBreakdown' => $salaryBreakdown,
-            'attendanceSummary' => $attendanceSummary,
-            'payrollCalculation' => $payrollCalculation,
-            'attendanceRecords' => $attendanceRecords,
-            'currentMonth' => $payrollRun->pay_period_end
-        ];
-    }
-
-    private function calculateAttendanceSummary($attendanceRecords, $payrollRun)
-    {
-        $summary = [
-            'total_working_days' => 0,
-            'present_days' => 0,
-            'absent_days' => 0,
-            'half_days' => 0,
-            'leave_days' => 0,
-            'holiday_days' => 0,
-            'overtime_hours' => 0,
-            'unpaid_leave_days' => 0,
-            'unpaid_leave_from_leave' => 0
-        ];
-
-        foreach ($attendanceRecords as $record) {
-            switch ($record->status) {
-                case 'present':
-                    $summary['present_days']++;
-                    break;
-                case 'absent':
-                    $summary['absent_days']++;
-                    break;
-                case 'half_day':
-                    $summary['half_days']++;
-                    break;
-                case 'on_leave':
-                    $summary['leave_days']++;
-                    break;
-                case 'holiday':
-                    $summary['holiday_days']++;
-                    break;
+            if (!empty($missing)) {
+                return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missing))->withInput();
             }
 
-            if ($record->overtime_hours > 0) {
-                $summary['overtime_hours'] += $record->overtime_hours;
-            }
+            // Create User model object
+            $import = new EmployeeMonthlySalaryImport($bulkMode);
+            Excel::import($import, $file);
+
+            // Check if there are failed rows
+            // if (count($import->failedRows) > 0) {
+            //     \Log::info('Some rows failed during employee import', ['failed_rows' => $import->failedRows]);
+
+            //     $fileName = 'excel/failed_rows_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+            //     return redirect()
+            //         ->back()
+            //         ->with('error', 'employee_create_failed' . Storage::url($fileName))
+            //         ->withInput();
+            // }
+
+            return redirect()->route('hr.employees.index')->with('success', __('Employee Upload successfully'));
+        } catch (\Exception $e) {
+            Log::error('Employee creation failed: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', __('Failed to create employee: :message', ['message' => $e->getMessage()]))->withInput();
         }
-
-        // Calculate total working days (excluding holidays)
-        $summary['total_working_days'] = $summary['present_days'] + $summary['absent_days'] + $summary['half_days'] + $summary['leave_days'];
-
-        // Calculate unpaid leave days
-        $summary['unpaid_leave_days'] = $summary['absent_days'] + ($summary['half_days'] * 0.5);
-
-        return $summary;
     }
 }

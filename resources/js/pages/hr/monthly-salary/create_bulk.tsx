@@ -8,7 +8,7 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Trash2, Upload, Download } from 'lucide-react';
 
-export default function EmployeeSalaryCreate() {
+export default function MonthlySalarySettlementCreate() {
   const { t } = useTranslation();
   // State
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -26,25 +26,25 @@ export default function EmployeeSalaryCreate() {
     }
 
     // Submit the form
-    router.post(route('hr.employee-salaries.bulkStore'), submitData, {
+    router.post(route('hr.monthly-salary.bulkStore'), submitData, {
       forceFormData: true,
       onSuccess: (page) => {
         setIsSubmitting(false);
         const error = page?.props?.flash?.error;
-        console.log("*****************", error)
+        console.log("*****************",error)
         let failedData = false;
         if (error) {
           const errorArray = error.split("employee_create_failed");
           if (errorArray.length > 1) {
-            console.log("----------", errorArray[1])
+            console.log("----------",errorArray[1])
             failedData = true;
             window.open(errorArray[1], '_blank', 'noopener,noreferrer');
           }
         }
         if (page.props.flash.success) {
           toast.success(t(page.props.flash.success));
-          router.get(route('hr.employee-salaries.index'));
-        } else if (failedData) {
+          router.get(route('hr.monthly-salary.index'));
+        } else if(failedData) {
           toast.info(t("Some record failed to upload. please check in failed excel report"));
         } else if (page.props.flash.error) {
           toast.error(t(page.props.flash.error));
@@ -59,19 +59,11 @@ export default function EmployeeSalaryCreate() {
     });
   };
 
-
-
-  // const breadcrumbs = [
-  //   { title: t('Dashboard'), href: route('dashboard') },
-  //   { title: t('HR Management'), href: route('hr.employee-salaries.index') },
-  //   { title: t('Employees'), href: route('hr.employee-salaries.index') },
-  //   { title: t('Upload Employee') }
-  // ];
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
-    { title: t('Payroll Management'), href: route('hr.employee-salaries.index') },
-    { title: t('Employee Salaries'), href: route('hr.employee-salaries.index') },
-    { title: t('Add Employee Salary') }
+    { title: t('Payroll Management'), href: route('hr.monthly-salary.index') },
+    { title: t('Monthly Salary Settlement'), href: route('hr.monthly-salary.index') },
+    { title: t('Add Monthly Settlement') }
   ];
 
   return (
@@ -84,7 +76,7 @@ export default function EmployeeSalaryCreate() {
           label: t('Back to Employees'),
           icon: <ArrowLeft className="h-4 w-4 mr-2" />,
           variant: 'outline',
-          onClick: () => router.get(route('hr.employee-salaries.index'))
+          onClick: () => router.get(route('hr.monthly-salary.index'))
         }
       ]}
     >
@@ -130,7 +122,7 @@ export default function EmployeeSalaryCreate() {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  (globalThis as any).location.href = route('hr.employee-salaries.download-template');
+                  (globalThis as any).location.href = route('hr.monthly-salary.download-template');
                 }}
               >
                 <Download className="h-4 w-4 mr-2" />
@@ -167,7 +159,7 @@ export default function EmployeeSalaryCreate() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.get(route('hr.employee-salaries.index'))}
+            onClick={() => router.get(route('hr.monthly-salary.index'))}
           >
             {t('Cancel')}
           </Button>

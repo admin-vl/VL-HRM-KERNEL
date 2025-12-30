@@ -1057,6 +1057,9 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         // Monthly Salaries routes
         Route::middleware('permission:manage-employee-salaries')->group(function () {
             Route::get('hr/monthly-salary', [\App\Http\Controllers\MonthlySalaryController::class, 'index'])->name('hr.monthly-salary.index');
+            Route::get('/hr/monthly-salary/export-sample', [\App\Http\Controllers\MonthlySalaryController::class, 'downloadTemplate'])->name('hr.monthly-salary.download-template');
+            Route::get('hr/monthly-salary/create_bulk', [\App\Http\Controllers\MonthlySalaryController::class, 'create_bulk'])->name('hr.monthly-salary.create_bulk');
+            Route::post('hr/monthly-salary/bulk', [\App\Http\Controllers\MonthlySalaryController::class, 'bulkCreate'])->middleware('permission:create-employee-salaries')->name('hr.monthly-salary.bulkStore');
         });
 
         // Payroll Runs routes
