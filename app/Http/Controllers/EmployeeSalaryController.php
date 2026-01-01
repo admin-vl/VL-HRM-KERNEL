@@ -513,7 +513,7 @@ class EmployeeSalaryController extends Controller
 
     public function downloadTemplate()
     {
-        return Excel::download(new EmployeeSalaryTemplateExport(), 'employee_salary_import_template.xlsx');
+        return Excel::download(new EmployeeSalaryTemplateExport(), 'employee_salary_template.xlsx');
     }
 
     public function create_bulk()

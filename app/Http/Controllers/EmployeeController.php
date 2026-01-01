@@ -937,6 +937,6 @@ class EmployeeController extends Controller
 
     public function downloadTemplate()
     {
-        return Excel::download(new EmployeeTemplateExport(), 'employee_import_template.xlsx');
+        return Excel::download(new EmployeeTemplateExport(), 'employee_template.xlsx');
     }
 }
