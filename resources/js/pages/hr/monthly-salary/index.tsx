@@ -12,10 +12,11 @@ import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
+import { getYearMonth } from '@/constants/month';
 
-export default function EmployeeSalaries() {
+export default function MonthlySalarySettlement() {
   const { t } = useTranslation();
-  const { auth, employeeSalaries, employees, salaryComponents, filters: pageFilters = {}, flash } = usePage().props as any;
+  const { auth, monthlySalary, employees, salaryComponents, filters: pageFilters = {}, flash } = usePage().props as any;
   const permissions = auth?.permissions || [];
 
 
@@ -46,7 +47,7 @@ export default function EmployeeSalaries() {
   };
 
   const applyFilters = () => {
-    router.get(route('hr.employee-salaries.index'), {
+    router.get(route('hr.monthly-salary.index'), {
       page: 1,
       search: searchTerm || undefined,
       employee_id: selectedEmployee !== 'all' ? selectedEmployee : undefined,
@@ -58,7 +59,7 @@ export default function EmployeeSalaries() {
   const handleSort = (field: string) => {
     const direction = pageFilters.sort_field === field && pageFilters.sort_direction === 'asc' ? 'desc' : 'asc';
 
-    router.get(route('hr.employee-salaries.index'), {
+    router.get(route('hr.monthly-salary.index'), {
       sort_field: field,
       sort_direction: direction,
       page: 1,
@@ -107,7 +108,7 @@ export default function EmployeeSalaries() {
     if (formMode === 'create') {
       toast.loading(t('Creating Monthly Salary Settlement...'));
 
-      router.post(route('hr.employee-salaries.store'), formData, {
+      router.post(route('hr.monthly-salary.store'), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
           toast.dismiss();
@@ -129,7 +130,7 @@ export default function EmployeeSalaries() {
     } else if (formMode === 'edit') {
       toast.loading(t('Updating Monthly Salary Settlement...'));
 
-      router.put(route('hr.employee-salaries.update', currentItem.id), formData, {
+      router.put(route('hr.monthly-salary.update', currentItem.id), formData, {
         onSuccess: (page) => {
           setIsFormModalOpen(false);
           toast.dismiss();
@@ -154,7 +155,7 @@ export default function EmployeeSalaries() {
   const handleDeleteConfirm = () => {
     toast.loading(t('Deleting Monthly Salary Settlement...'));
 
-    router.delete(route('hr.employee-salaries.destroy', currentItem.id), {
+    router.delete(route('hr.monthly-salary.destroy', currentItem.id), {
       onSuccess: (page) => {
         setIsDeleteModalOpen(false);
         toast.dismiss();
@@ -179,7 +180,7 @@ export default function EmployeeSalaries() {
     const newStatus = salary.is_active ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} Monthly Salary Settlement...`);
 
-    router.put(route('hr.employee-salaries.toggle-status', salary.id), {}, {
+    router.put(route('hr.monthly-salary.toggle-status', salary.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
         if (page.props.flash.success) {
@@ -200,7 +201,7 @@ export default function EmployeeSalaries() {
   };
 
   const handleShowPayroll = (salary: any) => {
-    router.get(route('hr.employee-salaries.show-payroll', salary.id), {}, {
+    router.get(route('hr.monthly-salary.show-payroll', salary.id), {}, {
       onSuccess: (page) => {
         if (page.props.flash?.error) {
           toast.error(t(page.props.flash.error));
@@ -219,10 +220,9 @@ export default function EmployeeSalaries() {
   const handleResetFilters = () => {
     setSearchTerm('');
     setSelectedEmployee('all');
-    setSelectedIsActive('all');
     setShowFilters(false);
 
-    router.get(route('hr.employee-salaries.index'), {
+    router.get(route('hr.monthly-salary.index'), {
       page: 1,
       per_page: pageFilters.per_page
     }, { preserveState: true, preserveScroll: true });
@@ -262,45 +262,23 @@ export default function EmployeeSalaries() {
       render: (value: any, row: any) => row.employee?.name || '-'
     },
     {
-      key: 'basic_salary',
-      label: t('Basic Salary'),
+      key: 'amount',
+      label: t('Amount'),
       render: (value: number) => (
         <span className="font-mono text-green-600">{window.appSettings?.formatCurrency(value || 0)}</span>
       )
     },
     {
-      key: 'components',
-      label: t('Components'),
-      render: (value: any[], row: any) => {
-        const componentNames = row.component_names || [];
-
-        return (
-          <div className="text-sm">
-            {componentNames.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {componentNames.map((name: string, index: number) => {
-                  const componentType = row.component_types?.[index];
-                  const isEarning = componentType === 'earning';
-
-                  return (
-                    <span
-                      key={index}
-                      className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${isEarning
-                        ? 'bg-green-50 text-green-700 ring-green-700/10'
-                        : 'bg-red-50 text-red-700 ring-red-700/10'
-                        }`}
-                    >
-                      {name}
-                    </span>
-                  );
-                })}
-              </div>
-            ) : (
-              <span className="text-gray-500">Basic only</span>
-            )}
-          </div>
-        );
-      }
+      key: 'year_month',
+      label: t('Month/Year'),
+      render: (value: any, row: any) => (
+        <span>{getYearMonth(row.year, row.month)}</span>
+      )
+    },
+    {
+      key: 'salaryComponent',
+      label: t('Component'),
+      render: (value: any, row: any) => row.salary_component?.name || '-'
     },
     {
       key: 'is_active',
@@ -310,7 +288,7 @@ export default function EmployeeSalaries() {
           ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
           : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
           }`}>
-          {value ? t('Active') : t('Inactive')}
+          {value ? t('Completed') : t('Pending')}
         </span>
       )
     },
@@ -324,33 +302,19 @@ export default function EmployeeSalaries() {
 
   // Define table actions
   const actions = [
-    {
-      label: t('View'),
-      icon: 'Eye',
-      action: 'view',
-      className: 'text-blue-500',
-      requiredPermission: 'view-employee-salaries'
-    },
+    // {
+    //   label: t('View'),
+    //   icon: 'Eye',
+    //   action: 'view',
+    //   className: 'text-blue-500',
+    //   requiredPermission: 'view-employee-salaries'
+    // },
     {
       label: t('Edit'),
       icon: 'Edit',
       action: 'edit',
       className: 'text-amber-500',
       requiredPermission: 'edit-employee-salaries'
-    },
-    {
-      label: t('Toggle Status'),
-      icon: 'Lock',
-      action: 'toggle-status',
-      className: 'text-amber-500',
-      requiredPermission: 'edit-employee-salaries'
-    },
-    {
-      label: t('Show Payroll'),
-      icon: 'BarChart3',
-      action: 'show-payroll',
-      className: 'text-blue-500',
-      requiredPermission: 'view-employee-salaries',
     },
     {
       label: t('Delete'),
@@ -379,7 +343,7 @@ export default function EmployeeSalaries() {
   return (
     <PageTemplate
       title={t("Monthly Salary Settlement")}
-      url="/hr/employee-salaries"
+      url="/hr/monthly-salary"
       actions={pageActions}
       breadcrumbs={breadcrumbs}
       noPadding
@@ -399,14 +363,14 @@ export default function EmployeeSalaries() {
               onChange: setSelectedEmployee,
               options: employeeOptions
             },
-            {
-              name: 'is_active',
-              label: t('Status'),
-              type: 'select',
-              value: selectedIsActive,
-              onChange: setSelectedIsActive,
-              options: isActiveOptions
-            }
+            // {
+            //   name: 'is_active',
+            //   label: t('Status'),
+            //   type: 'select',
+            //   value: selectedIsActive,
+            //   onChange: setSelectedIsActive,
+            //   options: isActiveOptions
+            // }
           ]}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
@@ -416,12 +380,11 @@ export default function EmployeeSalaries() {
           onApplyFilters={applyFilters}
           currentPerPage={pageFilters.per_page?.toString() || "10"}
           onPerPageChange={(value) => {
-            router.get(route('hr.employee-salaries.index'), {
+            router.get(route('hr.monthly-salary.index'), {
               page: 1,
               per_page: parseInt(value),
               search: searchTerm || undefined,
-              employee_id: selectedEmployee !== 'all' ? selectedEmployee : undefined,
-              is_active: selectedIsActive !== 'all' ? selectedIsActive : undefined
+              employee_id: selectedEmployee !== 'all' ? selectedEmployee : undefined
             }, { preserveState: true, preserveScroll: true });
           }}
         />
@@ -432,8 +395,8 @@ export default function EmployeeSalaries() {
         <CrudTable
           columns={columns}
           actions={actions}
-          data={employeeSalaries?.data || []}
-          from={employeeSalaries?.from || 1}
+          data={monthlySalary?.data || []}
+          from={monthlySalary?.from || 1}
           onAction={handleAction}
           sortField={pageFilters.sort_field}
           sortDirection={pageFilters.sort_direction}
@@ -441,7 +404,7 @@ export default function EmployeeSalaries() {
           permissions={permissions}
           entityPermissions={{
             view: 'view-employee-salaries',
-            create: 'create-employee-salaries',
+            // create: 'create-employee-salaries',
             edit: 'edit-employee-salaries',
             delete: 'delete-employee-salaries'
           }}
@@ -449,10 +412,10 @@ export default function EmployeeSalaries() {
 
         {/* Pagination section */}
         <Pagination
-          from={employeeSalaries?.from || 0}
-          to={employeeSalaries?.to || 0}
-          total={employeeSalaries?.total || 0}
-          links={employeeSalaries?.links}
+          from={monthlySalary?.from || 0}
+          to={monthlySalary?.to || 0}
+          total={monthlySalary?.total || 0}
+          links={monthlySalary?.links}
           entityName={t("monthly salary settlements")}
           onPageChange={(url) => router.get(url)}
         />
@@ -475,18 +438,17 @@ export default function EmployeeSalaries() {
                 label: emp.name
               })) : []
             },
-            { name: 'basic_salary', label: t('Basic Salary'), type: 'number', required: true, min: 0, step: 0.01 },
+            { name: 'amount', label: t('Amount'), type: 'number', required: true, min: 0, step: 0.01 },
             {
-              name: 'components',
+              name: 'salary_component_id',
               label: t('Salary Components'),
-              type: 'multi-select',
+              type: 'select',
               options: salaryComponents ? salaryComponents.map((comp: any) => ({
                 value: comp.id.toString(),
                 label: `${comp.name} (${comp.type}) - ${comp.calculation_type === 'percentage' ? comp.percentage_of_basic + '%' : 'Rs.' + comp.default_amount}`
               })) : [],
               placeholder: t('Select salary components')
             },
-            { name: 'is_active', label: t('Is Active'), type: 'checkbox', defaultValue: true },
             { name: 'notes', label: t('Notes'), type: 'textarea', placeholder: t('Select components to be applied to this salary') }
           ],
           modalSize: 'lg'

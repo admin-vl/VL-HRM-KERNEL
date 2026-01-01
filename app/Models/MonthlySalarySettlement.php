@@ -16,4 +16,24 @@ class MonthlySalarySettlement extends Model
         'status',
         'created_by'
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(User::class, 'employee_id');
+    }
+
+
+
+    /**
+     * Get the user who created the salary.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function salary_component()
+    {
+        return $this->belongsTo(SalaryComponent::class, 'salary_component_id');
+    }
 }

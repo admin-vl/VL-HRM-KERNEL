@@ -19,8 +19,13 @@ class EmployeeMonthlySalaryImport implements ToModel, WithChunkReading, WithBatc
     public array $failedRows = [];
 
     protected $createdBy;
-    public function __construct()
+    protected $month;
+    protected $year;
+
+    public function __construct($month, $year)
     {
+        $this->month = $month;
+        $this->year  = $year;
         $this->createdBy = Auth::id() ?? 1;
     }
 
@@ -46,18 +51,21 @@ class EmployeeMonthlySalaryImport implements ToModel, WithChunkReading, WithBatc
     public function model(array $row)
     {
         try {
+            Log::info($row);
             $employee = data_get($row, 'employee');
             $amount = data_get($row, 'amount');
 
+            Log::info("Employee ==" . $employee . "Amount --" . $amount);
             if (!$employee || !$amount) {
-                // Log::info("Missing required fields in row: " . json_encode($row));
+                Log::info("Missing required fields in row: " . json_encode($row));
                 return null;
             }
-            Log::info($row);
+            Log::info("=====================" . json_encode($row));
             // Log::info("Success ==");
 
             DB::transaction(function () use ($row) {
                 $ids = $this->convertNamesToIds($row);
+                Log::info("Idssss" . json_encode($ids));
 
                 // $employeeSalary = EmployeeSalary::where('employee_id', $ids['employeeId'])
                 //     ->whereIn('created_by', getCompanyAndUsersId())
@@ -66,12 +74,14 @@ class EmployeeMonthlySalaryImport implements ToModel, WithChunkReading, WithBatc
                 MonthlySalarySettlement::updateOrCreate(
                     [
                         'employee_id' => $ids['employeeId'],
-                        'created_by'  => $this->createdBy
+                        'created_by'  => $this->createdBy,
+                        'salary_component_id' => $ids['salaryComponentId'],
+                        'year' => $this->year,
+                        'month' => $this->month
                     ],
                     [
-                        'amount' => $row['basic_salary'],
-                        'salaryComponentId'   => $$ids['salaryComponentId'],
-                        'is_active'    => true,
+                        'amount' => $row['amount'],
+                        'salary_component_id'   => $ids['salaryComponentId'],
                         'notes'        => $row['notes']
                     ]
                 );
