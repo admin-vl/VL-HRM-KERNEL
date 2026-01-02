@@ -96,7 +96,7 @@ export default function MonthlySalarySettlementCreate() {
   return (
     <PageTemplate
       title={t("Add Monthly Salary Settlement")}
-      url="/hr//create-bulk"
+      url="/hr/create-bulk"
       breadcrumbs={breadcrumbs}
       actions={[
         {
