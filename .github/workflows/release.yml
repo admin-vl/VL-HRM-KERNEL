@@ -2,10 +2,21 @@ name: Deploy to BigRock Shared Hosting
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - 'main' # Trigger on main branch for push events
+  pull_request:
+    branches:
+      - main # Trigger only for PRs to main branch
+
+# Ensure only one workflow runs per branch/PR at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
+    # Runs only on main branch
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
       # 🔹 PLACE MYSQL SERVICE HERE
@@ -120,4 +131,52 @@ jobs:
             **/tests/**
             **/.github/**
 
+  semantic-release:
+    needs: deploy
+    # Rules:
+    # 1. For a PR, run the job
+    # 2. For main branch push, run the job
+    # 3. For any other branch push, run if a PR does NOT exist
+    if: |
+      github.event_name == 'pull_request' || 
+      github.ref == 'refs/heads/main' || 
+      (github.event_name == 'push' && github.event.pull_request == null)
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "v24.12.0" # nodejs LTS version
+          cache: 'npm' # Optimized built-in caching for v4
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Configure Git
+        # Rule: Only for actual release on main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Semantic Release
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            npx semantic-release --dry-run
+          else
+            npx semantic-release
+          fi
+        env:
+          # Preconfigured GitHub token for authentication, you don’t need to manually create this.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
