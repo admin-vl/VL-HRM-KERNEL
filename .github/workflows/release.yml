@@ -136,7 +136,7 @@ jobs:
             **/.github/**
 
   semantic-release:
-    needs: deploy
+    # needs: deploy
     # Rules:
     # 1. For a PR, run the job
     # 2. For main branch push, run the job
