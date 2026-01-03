@@ -12,10 +12,10 @@ on:
       - synchronize
       - reopened
 
-# Ensure only one workflow runs per branch/PR at a time
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+# # Ensure only one workflow runs per branch/PR at a time
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+#   cancel-in-progress: true
 
 jobs:
   deploy:
