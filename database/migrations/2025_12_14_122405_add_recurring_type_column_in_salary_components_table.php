@@ -14,11 +14,8 @@ return new class extends Migration
     {
         Schema::table('salary_components', function (Blueprint $table) {
             $table->enum('recurring_type', ['recurring', 'non-recurring'])->after('description')->default('non-recurring');
-            DB::statement("
-                ALTER TABLE salary_components
-                MODIFY type
-                ENUM('earning','deduction','reimbursement')
-            ");
+            // Modify the existing 'type' column
+            $table->enum('type', ['earning', 'deduction', 'reimbursement'])->change();
         });
     }
 
@@ -28,12 +25,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('salary_components', function (Blueprint $table) {
-            $table->removeColumn('recurring_type');
-            DB::statement("
-                ALTER TABLE salary_components
-                MODIFY type
-                ENUM('earning','deduction')
-            ");
+            $table->dropColumn('recurring_type');
+            // Revert 'type' column
+            $table->enum('type', ['earning', 'deduction'])->change();
         });
     }
 };

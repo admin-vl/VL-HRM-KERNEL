@@ -7,11 +7,15 @@ on:
   pull_request:
     branches:
       - main # Trigger only for PRs to main branch
+    types:
+      - opened
+      - synchronize
+      - reopened
 
-# Ensure only one workflow runs per branch/PR at a time
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+# # Ensure only one workflow runs per branch/PR at a time
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+#   cancel-in-progress: true
 
 jobs:
   deploy:
@@ -132,15 +136,14 @@ jobs:
             **/.github/**
 
   semantic-release:
+    # Currently this is skipped for PRs, since deploy job is skipped. ToDo, refactor deploy job.
     needs: deploy
     # Rules:
     # 1. For a PR, run the job
     # 2. For main branch push, run the job
-    # 3. For any other branch push, run if a PR does NOT exist
     if: |
-      github.event_name == 'pull_request' || 
-      github.ref == 'refs/heads/main' || 
-      (github.event_name == 'push' && github.event.pull_request == null)
+      (github.event_name == 'pull_request' && github.base_ref == 'main') || 
+      github.ref == 'refs/heads/main'
     permissions:
       contents: write
       issues: write
