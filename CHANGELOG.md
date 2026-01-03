@@ -2,6 +2,14 @@
 
 
 
+## [1.0.1](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.0.0...v1.0.1) (2026-01-03)
+
+
+### Bug Fixes
+
+* enable migration to work on both SQLite (local) and MySQL (prod) ([92cc567](https://github.com/monikabhardwaj/VL-HRM-Main/commit/92cc5673b7f4bbfcce5e09850d59f663d6bf929f))
+* update workflow rules for pull request event types ([404985e](https://github.com/monikabhardwaj/VL-HRM-Main/commit/404985ee22b68e072944799390e874ffd8c36d0f))
+
 # 1.0.0 (2026-01-02)
 
 
