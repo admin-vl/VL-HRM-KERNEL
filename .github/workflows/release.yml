@@ -136,7 +136,8 @@ jobs:
             **/.github/**
 
   semantic-release:
-    # needs: deploy
+    # Currently this is skipped for PRs, since deploy job is skipped. ToDo, refactor deploy job.
+    needs: deploy
     # Rules:
     # 1. For a PR, run the job
     # 2. For main branch push, run the job
