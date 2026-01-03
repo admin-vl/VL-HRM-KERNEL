@@ -136,11 +136,9 @@ jobs:
     # Rules:
     # 1. For a PR, run the job
     # 2. For main branch push, run the job
-    # 3. For any other branch push, run if a PR does NOT exist
     if: |
       github.event_name == 'pull_request' || 
-      github.ref == 'refs/heads/main' || 
-      (github.event_name == 'push' && github.event.pull_request == null)
+      github.ref == 'refs/heads/main'
     permissions:
       contents: write
       issues: write
