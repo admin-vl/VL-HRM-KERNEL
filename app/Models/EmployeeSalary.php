@@ -67,8 +67,26 @@ class EmployeeSalary extends BaseModel
      */
     public function calculateAllComponents()
     {
-        $selectedComponentIds = $this->components ?? [];
-        $components = SalaryComponent::whereIn('id', $selectedComponentIds)
+        // $selectedComponentIds = $this->components ?? [];
+        $recurringNonRecurringIds = EmployeeSalaryComponent::where('employee_salary_id', $this->id)
+            // ->where('type', 1)
+            ->pluck('salary_components_id');
+
+        $monthlySalarySettlement = MonthlySalarySettlement::where('employee_id', $this->employee_id)
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->pluck('salary_component_id');
+
+        // $nonRecurringIds = EmployeeSalaryComponent::where('employee_salary_id', $this->id)
+        //     ->where('type', 2)
+        //     ->pluck('salary_components_id');
+
+        $combinedIds = $recurringNonRecurringIds
+            ->merge($monthlySalarySettlement)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $components = SalaryComponent::whereIn('id', $combinedIds)
             ->where('status', 'active')
             ->whereIn('created_by', getCompanyAndUsersId())
             ->get();
@@ -81,7 +99,7 @@ class EmployeeSalary extends BaseModel
 
         foreach ($components as $component) {
             $amount = $component->calculateAmount($this->basic_salary);
-            if ($component->type === 'earning') {
+            if ($component->type === 'earning' || $component->type === 'reimbursement') {
                 $earnings[$component->name] = $amount;
                 $totalEarnings += $amount;
             } else {
@@ -109,8 +127,8 @@ class EmployeeSalary extends BaseModel
             'employee_salary_id',
             'salary_components_id'
         )
-        ->withPivot(['amount', 'type'])
-        ->withTimestamps();
+            ->withPivot(['amount', 'type'])
+            ->withTimestamps();
     }
 
     public function employeeSalaryComponents()
