@@ -2,6 +2,13 @@
 
 
 
+# [1.1.0](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.0.1...v1.1.0) (2026-01-04)
+
+
+### Features
+
+* add global search for companies, Employees, locations, departments, and designations ([4190751](https://github.com/monikabhardwaj/VL-HRM-Main/commit/41907515f4f17b0c9733f4ee13672327b09fe6b9))
+
 ## [1.0.1](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.0.0...v1.0.1) (2026-01-03)
 
 
