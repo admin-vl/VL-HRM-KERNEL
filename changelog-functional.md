@@ -9,3 +9,6 @@
 - Employee Salary add two section for Recurring Secction and Non Recurring
 - Bulk import in employee salary
 - Bulk import monthly salary settlement
+- Payroll run change
+    1) Get edited amount for calculation
+    2) In Payroll run apply monthly salary settlement

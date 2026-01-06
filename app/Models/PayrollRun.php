@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -121,7 +122,8 @@ class PayrollRun extends BaseModel
         }
 
         // Calculate salary breakdown using selected components
-        $salaryBreakdown = $employeeSalary->calculateAllComponents();
+        $salaryBreakdown = $employeeSalary->calculateAllComponents($this->pay_period_start);
+        // die;
 
         // Get attendance records for pay period
         $attendanceRecords = AttendanceRecord::where('employee_id', $employee->id)
@@ -191,6 +193,14 @@ class PayrollRun extends BaseModel
             'deductions_breakdown' => $salaryBreakdown['deductions'],
             'created_by' => $this->created_by,
         ]);
+
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->format('Y');
+        MonthlySalarySettlement::where('monthly_salary_settlements.status', 0)
+            ->whereIn('monthly_salary_settlements.created_by', getCompanyAndUsersId())
+            ->where('month', $currentMonth)
+            ->where('year', $currentYear)
+            ->update(['status' => 1]);
     }
 
 
