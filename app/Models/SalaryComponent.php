@@ -50,6 +50,15 @@ class SalaryComponent extends BaseModel
         return $this->default_amount;
     }
 
+    public function reviceCalculateAmount($basicSalary = 0, $calculation_type = "", $amout = 0)
+    {
+        if ($calculation_type === 'percentage') {
+            return ($basicSalary * $amout) / 100;
+        }
+        
+        return $amout;
+    }
+
     /**
      * Get earnings components.
      */
