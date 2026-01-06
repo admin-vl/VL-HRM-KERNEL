@@ -2,6 +2,18 @@
 
 
 
+# [1.2.0](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.1.0...v1.2.0) (2026-01-06)
+
+
+### Bug Fixes
+
+* Payroll run change ([d69fbe7](https://github.com/monikabhardwaj/VL-HRM-Main/commit/d69fbe7e21fb1fd2802380354e7bef9e77987122))
+
+
+### Features
+
+* Employee payroll run change in calculate component ([0854eab](https://github.com/monikabhardwaj/VL-HRM-Main/commit/0854eabb37542913b7a7477b1d1582256d9a62ae))
+
 # [1.1.0](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.0.1...v1.1.0) (2026-01-04)
 
 
