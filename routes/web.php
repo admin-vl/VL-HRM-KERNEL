@@ -7,6 +7,7 @@ use App\Http\Controllers\PlanOrderController;
 use App\Http\Controllers\PlanRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\Search\GlobalSearchController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CouponController;
@@ -154,8 +155,11 @@ Route::get('email-templates', [\App\Http\Controllers\EmailTemplateController::cl
 Route::get('email-templates/{emailTemplate}', [\App\Http\Controllers\EmailTemplateController::class, 'show'])->name('email-templates.show');
 Route::put('email-templates/{emailTemplate}/settings', [\App\Http\Controllers\EmailTemplateController::class, 'updateSettings'])->name('email-templates.update-settings');
 Route::put('email-templates/{emailTemplate}/content', [\App\Http\Controllers\EmailTemplateController::class, 'updateContent'])->name('email-templates.update-content');
+Route::get('global-search', [GlobalSearchController ::class, 'search'])
+->name('global.search');
 
 Route::middleware(['auth', 'verified', 'setting'])->group(function () {
+
 
     Route::middleware('checksaas')->group(function () {
         // Plans routes - accessible without plan check
@@ -359,7 +363,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             Route::get('/hr/employees/export-sample', [EmployeeController::class, 'downloadTemplate'])->name('hr.employees.download-template');
             Route::post('hr/employees', [EmployeeController::class, 'store'])->middleware('permission:create-employees')->name('hr.employees.store');
             Route::post('hr/employees/bulk', [EmployeeController::class, 'bulkCreate'])->middleware('permission:create-employees')->name('hr.employees.bulkStore');
-            Route::get('hr/employees/{employee}', [EmployeeController::class, 'show'])->middleware('permission:view-employees')->name('hr.employees.show');
+            Route::get('hr/employees/{employee}', action: [EmployeeController::class, 'show'])->middleware('permission:view-employees')->name('hr.employees.show');
             Route::get('hr/employees/{employee}/edit', [EmployeeController::class, 'edit'])->middleware('permission:edit-employees')->name('hr.employees.edit');
             Route::put('hr/employees/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit-employees')->name('hr.employees.update');
             Route::delete('hr/employees/{employee}', [EmployeeController::class, 'destroy'])->middleware('permission:delete-employees')->name('hr.employees.destroy');
