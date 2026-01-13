@@ -2,6 +2,13 @@
 
 
 
+## [1.2.1](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.2.0...v1.2.1) (2026-01-13)
+
+
+### Bug Fixes
+
+* Employee View Modification ([6a7a8b2](https://github.com/monikabhardwaj/VL-HRM-Main/commit/6a7a8b2cd360644a84c5af791d3461b4c012d6fb))
+
 # [1.2.0](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.1.0...v1.2.0) (2026-01-06)
 
 
