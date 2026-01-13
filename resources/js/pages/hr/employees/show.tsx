@@ -15,21 +15,21 @@ import { getImagePath } from '@/utils/helpers';
 
 export default function EmployeeShow() {
   const { t } = useTranslation();
-  const { auth, employee } = usePage().props as any;
+  const { auth, employee, recurring, nonRecurring } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const getInitials = useInitials();
-  
+
   // State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('basic_info');
-  
+
   const handleEdit = () => {
     router.get(route('hr.employees.edit', employee.id));
   };
-  
+
   const handleDeleteConfirm = () => {
     toast.loading(t('Deleting employee...'));
-    
+
     router.delete(route('hr.employees.destroy', employee.id), {
       onSuccess: (page) => {
         toast.dismiss();
@@ -50,11 +50,11 @@ export default function EmployeeShow() {
       }
     });
   };
-  
+
   const handleToggleStatus = () => {
     const newStatus = employee.status === 'active' ? 'inactive' : 'active';
     toast.loading(`${newStatus === 'active' ? t('Activating') : t('Deactivating')} employee...`);
-    
+
     router.put(route('hr.employees.toggle-status', employee.id), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -74,10 +74,10 @@ export default function EmployeeShow() {
       }
     });
   };
-  
+
   const handleDeleteDocument = (documentId: number) => {
     toast.loading(t('Deleting document...'));
-    
+
     router.delete(route('hr.employees.documents.destroy', [employee.id, documentId]), {
       onSuccess: (page) => {
         toast.dismiss();
@@ -101,7 +101,7 @@ export default function EmployeeShow() {
   const handleDocumentVerification = (documentId: number, status: 'verified' | 'rejected') => {
     const action = status === 'verified' ? 'approve' : 'reject';
     toast.loading(t(`${status === 'verified' ? 'Approving' : 'Rejecting'} document...`));
-    
+
     router.put(route(`hr.employees.documents.${action}`, [employee.id, documentId]), {}, {
       onSuccess: (page) => {
         toast.dismiss();
@@ -137,8 +137,8 @@ export default function EmployeeShow() {
   ];
 
   return (
-    <PageTemplate 
-      title={employee?.name || t("Employee Details")} 
+    <PageTemplate
+      title={employee?.name || t("Employee Details")}
       url={`/hr/employees/${employee?.id}`}
       actions={pageActions}
       breadcrumbs={breadcrumbs}
@@ -157,14 +157,13 @@ export default function EmployeeShow() {
               </div>
               <h2 className="text-xl font-bold mb-1">{employee.name}</h2>
               <p className="text-sm text-muted-foreground mb-2">{employee.employee?.designation?.name || '-'}</p>
-              <div className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mb-4 ${
-                employee.status === 'active' 
-                  ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' 
-                  : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-              }`}>
+              <div className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mb-4 ${employee.status === 'active'
+                ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+                : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
+                }`}>
                 {employee.status === 'active' ? t('Active') : t('Inactive')}
               </div>
-              
+
               <div className="w-full space-y-3">
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -221,11 +220,11 @@ export default function EmployeeShow() {
             <TabsList className="grid grid-cols-5 mb-4">
               <TabsTrigger value="basic_info">{t('Basic Info')}</TabsTrigger>
               <TabsTrigger value="employment">{t('Employment')}</TabsTrigger>
-              <TabsTrigger value="contact">{t('Contact')}</TabsTrigger>
-              <TabsTrigger value="banking">{t('Banking')}</TabsTrigger>
+              <TabsTrigger value="ctc">{t('CTC')}</TabsTrigger>
+              {/* <TabsTrigger value="banking">{t('Banking')}</TabsTrigger> */}
               <TabsTrigger value="documents">{t('Documents')}</TabsTrigger>
             </TabsList>
-            
+
             {/* Basic Info Tab */}
             <TabsContent value="basic_info">
               <Card>
@@ -261,8 +260,59 @@ export default function EmployeeShow() {
                   </div>
                 </CardContent>
               </Card>
+              <Card className='mt-5'>
+                <CardHeader>
+                  <CardTitle>{t('Contact Information')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Address Line 1')}</h4>
+                      <p>{employee.employee?.address_line_1 || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Address Line 2')}</h4>
+                      <p>{employee.employee?.address_line_2 || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('City')}</h4>
+                      <p>{employee.employee?.city || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('State/Province')}</h4>
+                      <p>{employee.employee?.state || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Country')}</h4>
+                      <p>{employee.employee?.country || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Postal/Zip Code')}</h4>
+                      <p>{employee.employee?.postal_code || '-'}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <h3 className="text-lg font-medium mb-4">{t('Emergency Contact')}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground">{t('Name')}</h4>
+                        <p>{employee.employee?.emergency_contact_name || '-'}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground">{t('Relationship')}</h4>
+                        <p>{employee.employee?.emergency_contact_relationship || '-'}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground">{t('Phone Number')}</h4>
+                        <p>{employee.employee?.emergency_contact_number || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
-            
+
             {/* Employment Tab */}
             <TabsContent value="employment">
               <Card>
@@ -307,62 +357,79 @@ export default function EmployeeShow() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             {/* Contact Tab */}
-            <TabsContent value="contact">
+            <TabsContent value="ctc">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('Contact Information')}</CardTitle>
+                  <CardTitle>{t('CTC Information')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">{t('Address Line 1')}</h4>
-                      <p>{employee.employee?.address_line_1 || '-'}</p>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Basic Salary')}</h4>
+                      <p>{employee?.employee?.employee_salary?.basic_salary || '-'}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Recurring Components')}</h4>
+                      {
+                        recurring && recurring.map((comp) => {
+                          return (
+                            <p>{comp.name} ({comp.calculation_type}) - {comp.calculation_type === 'percentage' ? comp.amount + '%' : 'Rs.' + comp.amount}</p>
+                          )
+                        })
+                      }
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">{t('Address Line 2')}</h4>
-                      <p>{employee.employee?.address_line_2 || '-'}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">{t('City')}</h4>
-                      <p>{employee.employee?.city || '-'}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">{t('State/Province')}</h4>
-                      <p>{employee.employee?.state || '-'}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">{t('Country')}</h4>
-                      <p>{employee.employee?.country || '-'}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">{t('Postal/Zip Code')}</h4>
-                      <p>{employee.employee?.postal_code || '-'}</p>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Non Recurring Components')}</h4>
+                      {
+                        nonRecurring && nonRecurring.map((comp) => {
+                          return (
+                            <p>{comp.name} ({comp.calculation_type}) - {comp.calculation_type === 'percentage' ? comp.amount + '%' : 'Rs.' + comp.amount}</p>
+                          )
+                        })
+                      }
                     </div>
                   </div>
-                  
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-4">{t('Emergency Contact')}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground">{t('Name')}</h4>
-                        <p>{employee.employee?.emergency_contact_name || '-'}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground">{t('Relationship')}</h4>
-                        <p>{employee.employee?.emergency_contact_relationship || '-'}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground">{t('Phone Number')}</h4>
-                        <p>{employee.employee?.emergency_contact_number || '-'}</p>
-                      </div>
+
+                </CardContent>
+              </Card>
+              <Card className='mt-5'>
+                <CardHeader>
+                  <CardTitle>{t('Banking Information')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Bank Name')}</h4>
+                      <p>{employee.employee?.bank_name || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Account Holder Name')}</h4>
+                      <p>{employee.employee?.account_holder_name || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Account Number')}</h4>
+                      <p>{employee.employee?.account_number || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Bank Identifier Code (BIC/SWIFT)')}</h4>
+                      <p>{employee.employee?.bank_identifier_code || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Bank Branch')}</h4>
+                      <p>{employee.employee?.bank_branch || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground">{t('Tax Payer ID')}</h4>
+                      <p>{employee.employee?.tax_payer_id || '-'}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             {/* Banking Tab */}
             <TabsContent value="banking">
               <Card>
@@ -399,7 +466,7 @@ export default function EmployeeShow() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             {/* Documents Tab */}
             <TabsContent value="documents">
               <Card>
@@ -420,15 +487,14 @@ export default function EmployeeShow() {
                                   <p className="text-sm text-muted-foreground">
                                     {document.expiry_date ? `${t('Expires')}: ${window.appSettings?.formatDateTime(document.expiry_date, false) || new Date(document.expiry_date).toLocaleDateString()}` : t('No expiry date')}
                                   </p>
-                                  <div className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mt-2 ${
-                                    document.verification_status === 'verified' 
-                                      ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' 
-                                      : document.verification_status === 'rejected'
-                                        ? 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-                                        : 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20'
-                                  }`}>
-                                    {document.verification_status === 'verified' 
-                                      ? t('Verified') 
+                                  <div className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mt-2 ${document.verification_status === 'verified'
+                                    ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+                                    : document.verification_status === 'rejected'
+                                      ? 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
+                                      : 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20'
+                                    }`}>
+                                    {document.verification_status === 'verified'
+                                      ? t('Verified')
                                       : document.verification_status === 'rejected'
                                         ? t('Rejected')
                                         : t('Pending')}
@@ -446,17 +512,17 @@ export default function EmployeeShow() {
                                 )}
                                 {hasPermission(permissions, 'edit-employees') && document.verification_status === 'pending' && (
                                   <>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={() => handleDocumentVerification(document.id, 'verified')}
                                       className="text-green-600 hover:text-green-700"
                                     >
                                       <Check className="h-4 w-4" />
                                     </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={() => handleDocumentVerification(document.id, 'rejected')}
                                       className="text-red-600 hover:text-red-700"
                                     >
