@@ -103,4 +103,9 @@ class Employee extends Model
     {
         return $this->hasMany(EmployeeDocument::class,'employee_id','user_id');
     }
+
+    public function employee_salary()
+    {
+        return $this->hasOne(EmployeeSalary::class,'employee_id','user_id');
+    }
 }

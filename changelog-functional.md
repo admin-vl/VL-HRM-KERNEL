@@ -12,3 +12,8 @@
 - Payroll run change
     1) Get edited amount for calculation
     2) In Payroll run apply monthly salary settlement
+- Employee View Modification
+    1) Remove Contact Information tab and add under Basic Information
+    2) Add CTC tab and add Banking Information in CTC
+    3) Remove Banking Information tab
+- Change Readme.md file

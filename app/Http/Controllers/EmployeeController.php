@@ -12,6 +12,7 @@ use App\Models\DocumentType;
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
 use App\Models\EmployeeInfo;
+use App\Models\EmployeeSalaryComponent;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
@@ -493,12 +494,42 @@ class EmployeeController extends Controller
         }
 
         // Load user with employee relationships
-        $user = User::with(['employee.branch', 'employee.department', 'employee.designation', 'employee.shift', 'employee.attendancePolicy', 'employee.documents.documentType'])
+        $user = User::with(['employee.branch', 'employee.department', 'employee.designation', 'employee.shift', 'employee.attendancePolicy', 'employee.documents.documentType', 'employee.employee_salary'])
             ->where('id', $employee->user_id)
             ->first();
 
+
+        $recurring = EmployeeSalaryComponent::join('salary_components', 'salary_components.id', '=', 'employee_salary_components.salary_components_id')
+            ->select(
+                'employee_salary_components.amount',
+                'name',
+                'employee_salary_components.type',
+                'calculation_type',
+                'salary_components.type as component_type'
+            )
+            ->where('employee_salary_id', $user->employee->employee_salary->id)
+            ->where('employee_salary_components.type', 1)
+            ->get();
+
+        $nonRecurring = EmployeeSalaryComponent::join('salary_components', 'salary_components.id', '=', 'employee_salary_components.salary_components_id')
+            ->select(
+                'employee_salary_components.amount',
+                'name',
+                'employee_salary_components.type',
+                'calculation_type',
+                'salary_components.type as component_type'
+            )
+            ->where('employee_salary_id', $user->employee->employee_salary->id)
+            ->where('employee_salary_components.type', 2)
+            ->get();
+
+
+        // dd($salaryComponents);
+
         return Inertia::render('hr/employees/show', [
             'employee' => $user,
+            'recurring' => $recurring,
+            'nonRecurring' => $nonRecurring
         ]);
     }
 
