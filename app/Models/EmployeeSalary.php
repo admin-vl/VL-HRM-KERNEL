@@ -73,16 +73,16 @@ class EmployeeSalary extends BaseModel
         $payrollMonth = Carbon::parse($payrollDate)->month;
         $payrollYear = Carbon::parse($payrollDate)->year;
 
-        $employeeComponents = SalaryComponent::join('employee_salary_components', 'salary_components.id', '=', 'employee_salary_components.salary_components_id')
-            ->leftJoin('employee_salaries', 'employee_salaries.id', '=', 'employee_salary_components.employee_salary_id')
-            ->where('employee_salaries.id', $this->id)  // Adjust the condition to match the employee salary ID
-            ->select(
-                'salary_components.type as component_type',
-                'salary_components.name as name',
-                'salary_components.calculation_type',
-                'employee_salary_components.amount as amount',
-                'employee_salary_components.salary_components_id as salary_component_id'
-            );
+        // $employeeComponents = SalaryComponent::join('employee_salary_components', 'salary_components.id', '=', 'employee_salary_components.salary_components_id')
+        //     ->leftJoin('employee_salaries', 'employee_salaries.id', '=', 'employee_salary_components.employee_salary_id')
+        //     ->where('employee_salaries.id', $this->id)  // Adjust the condition to match the employee salary ID
+        //     ->select(
+        //         'salary_components.type as component_type',
+        //         'salary_components.name as name',
+        //         'salary_components.calculation_type',
+        //         'employee_salary_components.amount as amount',
+        //         'employee_salary_components.salary_components_id as salary_component_id'
+        //     );
 
         $monthlySettlement = SalaryComponent::join('monthly_salary_settlements', 'salary_components.id', '=', 'monthly_salary_settlements.salary_component_id')
             ->whereIn('monthly_salary_settlements.created_by', getCompanyAndUsersId())
@@ -96,11 +96,11 @@ class EmployeeSalary extends BaseModel
                 DB::raw("'fixed' as calculation_type"),
                 'monthly_salary_settlements.amount as amount',
                 'monthly_salary_settlements.salary_component_id as salary_component_id'
-            );
+            )->get();
 
-        $components = $employeeComponents
-            ->unionAll($monthlySettlement)  // Use union() if you want distinct results
-            ->get();
+        // $components = $employeeComponents
+        //     ->unionAll($monthlySettlement)  // Use union() if you want distinct results
+        //     ->get();
 
         $earnings = ['Basic Salary' => $this->basic_salary];
 
@@ -109,7 +109,7 @@ class EmployeeSalary extends BaseModel
         $totalDeductions = 0;
         // Log::info(json_encode($components));
 
-        foreach ($components as $component) {
+        foreach ($monthlySettlement as $component) {
             // $amount = $component->calculateAmount($this->basic_salary);
             $amount = $component->reviceCalculateAmount($this->basic_salary, $component->calculation_type, $component->amount);
             if ($component->component_type === 'earning' || $component->component_type === 'reimbursement') {

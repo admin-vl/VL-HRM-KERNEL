@@ -194,12 +194,14 @@ class PayrollRun extends BaseModel
             'created_by' => $this->created_by,
         ]);
 
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->format('Y');
+        // $currentMonth = Carbon::now()->month;
+        // $currentYear = Carbon::now()->format('Y');
+        $payrollMonth = Carbon::parse($this->pay_period_start)->month;
+        $payrollYear = Carbon::parse($this->pay_period_start)->year;
         MonthlySalarySettlement::where('monthly_salary_settlements.status', 0)
             ->whereIn('monthly_salary_settlements.created_by', getCompanyAndUsersId())
-            ->where('month', $currentMonth)
-            ->where('year', $currentYear)
+            ->where('month', $payrollMonth)
+            ->where('year', $payrollYear)
             ->update(['status' => 1]);
     }
 
