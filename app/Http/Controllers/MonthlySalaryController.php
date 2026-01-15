@@ -39,6 +39,7 @@ class MonthlySalaryController extends Controller
         // }
 
         $query = MonthlySalarySettlement::whereIn('created_by', getCompanyAndUsersId())
+            ->where('status', 0)
             // ->lefyJoin('salary_components', 'salary_components.id', '=', 'monthly_salary_settlements.salary_component_id')
             ->with(['employee', 'creator', 'salary_component']);
 
