@@ -93,7 +93,8 @@ class EmployeeSalary extends BaseModel
             ->select(
                 'salary_components.type as component_type',
                 'salary_components.name as name',
-                DB::raw("'fixed' as calculation_type"),
+                'salary_components.calculation_type',
+                // DB::raw("'fixed' as calculation_type"),
                 'monthly_salary_settlements.amount as amount',
                 'monthly_salary_settlements.salary_component_id as salary_component_id'
             )->get();
