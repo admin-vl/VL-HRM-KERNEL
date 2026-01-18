@@ -1,29 +1,21 @@
 import React from 'react';
+import { Plus } from 'lucide-react';
+import { CrudFormModal } from '@/components/CrudFormModal';
 import { PageTemplate } from '@/components/page-template';
-import { RefreshCw, Users, Building2, Briefcase, UserPlus, Calendar, Clock, TrendingUp, BarChart3, Bell } from 'lucide-react';
+import { RefreshCw, Users, Building2, Briefcase, UserPlus, Calendar, Clock, TrendingUp, BarChart3, Bell, LayoutGrid } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import {useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line, AreaChart, Area } from 'recharts';
 import { format } from 'date-fns';
+import { toast } from '@/components/custom-toast';
+import { DASHBOARD_METRICS } from '@/config/dashboardMetrics';
 
 interface CompanyDashboardData {
-  stats: {
-    totalEmployees: number;
-    totalBranches: number;
-    totalDepartments: number;
-    newEmployeesThisMonth: number;
-    jobPostsThisMonth: number;
-    candidatesThisMonth: number;
-    attendanceRate: number;
-    presentToday: number;
-    pendingLeaves: number;
-    onLeaveToday: number;
-    activeJobPostings: number;
-    totalCandidates: number;
-  };
+  stats: Record<string, number>;
   charts: {
     departmentStats: Array<{name: string; value: number; color: string}>;
     hiringTrend: Array<{month: string; hires: number}>;
@@ -46,10 +38,25 @@ interface PageAction {
   variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   onClick: () => void;
 }
+interface DashboardWidget {
+  id: number;
+  title: string;
+  query_key: string;
+}
 
-export default function Dashboard({ dashboardData }: { dashboardData: CompanyDashboardData }) {
-  const { t } = useTranslation();
+export default function Dashboard({ dashboardData,dashboardWidgets }: { dashboardData: CompanyDashboardData, dashboardWidgets: DashboardWidget[] }) {
+
+
+  const [isAddBoxModalOpen, setIsAddBoxModalOpen] = useState(false)
   const { auth } = usePage().props as any;
+  const { t } = useTranslation();
+
+  const metricOptions = DASHBOARD_METRICS
+  .filter(metric => !metric.roles || metric.roles.includes(auth.user.type))
+  .map(metric => ({
+    label: t(metric.label),
+    value: metric.key,
+  }));
 
   const pageActions: PageAction[] = [
     {
@@ -60,20 +67,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
     }
   ];
 
-  const stats = dashboardData?.stats || {
-    totalEmployees: 0,
-    totalBranches: 0,
-    totalDepartments: 0,
-    newEmployeesThisMonth: 0,
-    jobPostsThisMonth: 0,
-    candidatesThisMonth: 0,
-    attendanceRate: 0,
-    presentToday: 0,
-    pendingLeaves: 0,
-    onLeaveToday: 0,
-    activeJobPostings: 0,
-    totalCandidates: 0
-  };
+  const stats: Record<string, number> = dashboardData?.stats ?? {};
 
   const charts = dashboardData?.charts || {
     departmentStats: [],
@@ -109,6 +103,30 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
     return colors[status] || 'bg-gray-50 text-gray-700 ring-gray-600/20';
   };
 
+  const handleDashboardWidgetSubmit = (formData: any) => {
+    toast.loading(t('Adding widget...'));
+
+    router.post(
+      route('dashboard-widgets.store'),
+      {
+        title: formData.title,
+        query_key: formData.metric_key, // ✅ MUST MATCH
+      },
+      {
+        onSuccess: () => {
+          toast.dismiss();
+          setIsAddBoxModalOpen(false);
+          toast.success(t('Dashboard widget added successfully'));
+        },
+        onError: () => {
+          toast.dismiss();
+          toast.error(t('Failed to add widget'));
+        },
+      }
+    );
+  };
+
+
   return (
     <PageTemplate 
       title={t('Dashboard')}
@@ -117,99 +135,46 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
     >
       <div className="space-y-6">
         {/* Key Metrics */}
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('Total Employees')}</p>
-                  <p className="mt-2 text-2xl font-bold">{stats.totalEmployees}</p>
-                  {isCompanyUser && (
-                    <p className="text-xs text-green-600 mt-1">+{stats.newEmployeesThisMonth} {t('this month')}</p>
-                  )}
-                </div>
-                <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
-                  <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+<div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+{dashboardWidgets?.length > 0 ? (
+  dashboardWidgets.map(widget => (
+    <Card key={widget.id}>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">
+              {widget.title}
+            </p>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('Branches')}</p>
-                  <p className="mt-2 text-2xl font-bold">{stats.totalBranches}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.totalDepartments} {t('departments')}</p>
-                </div>
-                <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
-                  <Building2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <p className="mt-2 text-2xl font-bold">
+              {stats?.[widget.query_key] ?? '--'}
+            </p>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('Attendance Rate')}</p>
-                  <p className="mt-2 text-2xl font-bold">{stats.attendanceRate}%</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.presentToday} {t('present today')}</p>
-                </div>
-                <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
-                  <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('Pending Leaves')}</p>
-                  <p className="mt-2 text-2xl font-bold">{stats.pendingLeaves}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.onLeaveToday} {t('on leave today')}</p>
-                </div>
-                <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
-                  <Calendar className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('Active Jobs')}</p>
-                  <p className="mt-2 text-2xl font-bold">{stats.activeJobPostings}</p>
-                  <p className="text-xs text-green-600 mt-1">+{stats.jobPostsThisMonth} {t('this month')}</p>
-                </div>
-                <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900">
-                  <Briefcase className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('Total Candidates')}</p>
-                  <p className="mt-2 text-2xl font-bold">{stats.totalCandidates}</p>
-                  <p className="text-xs text-green-600 mt-1">+{stats.candidatesThisMonth} {t('this month')}</p>
-                </div>
-                <div className="rounded-full bg-indigo-100 p-3 dark:bg-indigo-900">
-                  <UserPlus className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-full bg-primary/10 p-3">
+            <LayoutGrid className="h-5 w-5 text-primary" />
+          </div>
         </div>
+      </CardContent>
+    </Card>
+  ))): (
+  <div className="text-muted-foreground">
+    {t('No dashboard widgets added')}
+  </div>
+)}
+
+<Card
+  onClick={() => setIsAddBoxModalOpen(true)}
+  className="cursor-pointer border-dashed border-2 hover:border-primary hover:bg-muted/50 transition"
+>
+  <CardContent className="flex flex-col items-center justify-center p-6 text-muted-foreground hover:text-primary">
+    <Plus className="h-6 w-6 mb-2" />
+    <span className="text-sm font-medium">{t('Add Widget')}</span>
+  </CardContent>
+</Card>
+
+</div>
+
 
         {/* Charts Section */}
         <div className="grid gap-6 lg:grid-cols-2">
@@ -613,6 +578,34 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal Component For Adding Dashboard Box */}
+<CrudFormModal
+  isOpen={isAddBoxModalOpen}
+  onClose={() => setIsAddBoxModalOpen(false)}
+  onSubmit={handleDashboardWidgetSubmit}
+  formConfig={{
+    modalSize: 'md',
+    fields: [
+      {
+        name: 'title',
+        label: t('Box Title'),
+        type: 'text',
+        required: true,
+      },
+      {
+        name: 'metric_key',
+        label: t('Metric'),
+        type: 'select',
+        required: true,
+        options: metricOptions,
+      },
+    ],
+  }}
+  initialData={{}}
+  title={t('Add Dashboard Box')}
+  mode="create"
+/>
     </PageTemplate>
   );
 }

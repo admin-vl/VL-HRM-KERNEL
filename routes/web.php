@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardWidgetController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PlanOrderController;
@@ -86,6 +87,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [LandingPageController::class, 'show'])->name('home');
+Route::post('/dashboard-widgets', [DashboardWidgetController::class, 'store'])
+    ->name('dashboard-widgets.store');
 
 // Public form submission routes
 
