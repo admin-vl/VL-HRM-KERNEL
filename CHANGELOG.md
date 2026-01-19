@@ -2,6 +2,13 @@
 
 
 
+# [1.3.0](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.2.1...v1.3.0) (2026-01-18)
+
+
+### Features
+
+* Dynamic Dashboard widget boxes for company panel ([95978f3](https://github.com/monikabhardwaj/VL-HRM-Main/commit/95978f39f5b62695da1b4765a58f972618208330))
+
 ## [1.2.1](https://github.com/monikabhardwaj/VL-HRM-Main/compare/v1.2.0...v1.2.1) (2026-01-13)
 
 

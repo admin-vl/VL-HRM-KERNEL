@@ -299,19 +299,41 @@ class DashboardController extends Controller
 
         $dashboardData = [
             'stats' => [
-                'totalEmployees' => $totalEmployees,
-                'totalBranches' => $totalBranches,
-                'totalDepartments' => $totalDepartments,
-                'newEmployeesThisMonth' => $newEmployeesThisMonth,
-                'jobPostsThisMonth' => $jobPostsThisMonth,
-                'candidatesThisMonth' => $candidatesThisMonth,
-                'attendanceRate' => $attendanceRate,
-                'presentToday' => $presentToday,
-                'pendingLeaves' => $pendingLeaves,
-                'onLeaveToday' => $onLeaveToday,
-                'activeJobPostings' => $activeJobPostings,
-                'totalCandidates' => $totalCandidates
+                // existing
+                'total_employees' => $totalEmployees,
+                'total_branches' => $totalBranches,
+                'total_departments' => $totalDepartments,
+                'pending_leaves' => $pendingLeaves,
+
+                // 🔹 Attendance
+                'absent_today' => max($totalEmployees - $presentToday, 0),
+                'attendance_rate' => $attendanceRate,
+
+                // 🔹 Recruitment
+                'active_job_postings' => $activeJobPostings,
+                'total_candidates' => $totalCandidates,
+                'candidates_this_month' => $candidatesThisMonth,
+
+                // 🔹 Hiring
+                'new_employees_this_month' => $newEmployeesThisMonth,
+                'new_employees_today' => \App\Models\Employee::whereIn('created_by', $companyUserIds)
+                    ->whereDate('created_at', today())
+                    ->count(),
+
+                // 🔹 Leaves
+                'on_leave_today' => $onLeaveToday,
+                'approved_leaves' => \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
+                    ->where('status', 'approved')
+                    ->count(),
+
+                // 🔹 Organization
+                'total_roles' => \App\Models\Role::whereIn('created_by', $companyUserIds)->count(),
+                'total_announcements' => \App\Models\Announcement::whereIn('created_by', $companyUserIds)->count(),
+                'upcoming_meetings' => \App\Models\Meeting::whereIn('created_by', $companyUserIds)
+                    ->whereDate('meeting_date', '>=', today())
+                    ->count(),
             ],
+
             'charts' => [
                 'departmentStats' => $departmentStats,
                 'hiringTrend' => $hiringTrend,
@@ -328,8 +350,15 @@ class DashboardController extends Controller
             'userType' => $user->type
         ];
 
+        $dashboardWidgets = \App\Models\DashboardWidget::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->orderBy('order')
+            ->get(['id', 'title', 'query_key']);
+
+
         return Inertia::render('dashboard', [
-            'dashboardData' => $dashboardData
+            'dashboardData' => $dashboardData,
+            'dashboardWidgets' => $dashboardWidgets,
         ]);
     }
 
