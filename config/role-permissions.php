@@ -108,6 +108,7 @@ return [
         'leave_balances',
         'payslips',
         'payroll_adjustments',
-        'calendar'
+        'calendar',
+        'audit'
     ]
 ];

@@ -1,9 +1,13 @@
 <?php
 
 namespace App\Models;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class Role extends BaseSpatieRole
+class Role extends BaseSpatieRole implements AuditableContract
 {
+    use Auditable;
+    
     protected $fillable = [
         'name',
         'label',

@@ -872,6 +872,7 @@ class PermissionSeeder extends Seeder
             // Calendar permissions
             ['name' => 'manage-calendar', 'module' => 'calendar', 'label' => 'Manage Calendar', 'description' => 'Can manage calendar'],
             ['name' => 'view-calendar', 'module' => 'calendar', 'label' => 'View Calendar', 'description' => 'Can view calendar'],
+            ['name' => 'view-audit', 'module' => 'audit', 'label' => 'View Audit', 'description' => 'Can view audit'],
 
         ];
 

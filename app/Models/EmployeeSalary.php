@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class EmployeeSalary extends BaseModel
+class EmployeeSalary extends BaseModel implements AuditableContract
 {
     use HasFactory;
+    use Auditable;
 
     protected $fillable = [
         'employee_id',

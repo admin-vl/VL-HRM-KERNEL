@@ -11,11 +11,13 @@ use App\Models\Plan;
 use App\Models\Referral;
 use App\Models\PayoutRequest;
 use App\Services\MailConfigService;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class User extends BaseAuthenticatable implements MustVerifyEmail
+class User extends BaseAuthenticatable implements MustVerifyEmail, AuditableContract
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasRoles, HasFactory, Notifiable, Impersonate;
+    use HasRoles, HasFactory, Notifiable, Impersonate, Auditable;
 
     /**
      * The attributes that are mass assignable.
@@ -38,6 +40,14 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'google2fa_secret',
         'status',
         'active_module',
+    ];
+
+    protected $auditExclude = [
+        'password',
+        'remember_token',
+        'email_verified_at',
+        'google2fa_enable',
+        'google2fa_secret',
     ];
 
     /**
@@ -378,5 +388,4 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     {
         return $this->hasOne(CompanyInfo::class, 'user_id');
     }
-
 }

@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class ContractTemplate extends BaseModel
+class ContractTemplate extends BaseModel implements AuditableContract
 {
     use HasFactory;
+    use Auditable;
 
     protected $fillable = [
         'name',

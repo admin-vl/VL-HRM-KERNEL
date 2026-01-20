@@ -67,6 +67,7 @@ use App\Http\Controllers\PaiementPaymentController;
 use App\Http\Controllers\NepalstePaymentController;
 use App\Http\Controllers\YooKassaPaymentController;
 use App\Http\Controllers\AamarpayPaymentController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\MidtransPaymentController;
 use App\Http\Controllers\PaymentWallPaymentController;
 use App\Http\Controllers\SSPayPaymentController;
@@ -317,6 +318,9 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             Route::put('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->middleware('permission:toggle-status-users')->name('users.toggle-status');
         });
 
+        Route::middleware('permission:view-audit')->group(function () {
+            Route::get('audits', [AuditController::class, 'index'])->name('audits.index');
+        });
 
         // HR Module routes
         // Branch routes

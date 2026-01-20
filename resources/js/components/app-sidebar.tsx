@@ -22,6 +22,7 @@ import {
     Settings,
     Timer,
     Users,
+    Logs
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -121,6 +122,11 @@ export function AppSidebar() {
         //     title: t('Email Templates'),
         //     href: route('email-templates.index'),
         //     icon: Mail,
+        // },
+        // {
+        //     title: t('Audit'),
+        //     href: route('audits.index'),
+        //     icon: FileText,
         // },
         {
             title: t('Settings'),
@@ -978,6 +984,14 @@ export function AppSidebar() {
                         href: route('landing-page.custom-pages.index'),
                     },
                 ],
+            });
+        }
+
+        if (hasPermission(permissions, 'view-audit')) {
+            items.push({
+                title: t('Audits'),
+                href: route('audits.index'),
+                icon: FileText,
             });
         }
 

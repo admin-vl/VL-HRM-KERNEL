@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class PlanOrder extends Model
+class PlanOrder extends Model implements AuditableContract
 {
+    use Auditable;
+
     protected $fillable = [
         'user_id',
         'plan_id',

@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class AttendanceRecord extends BaseModel
+class AttendanceRecord extends BaseModel implements AuditableContract
 {
     use HasFactory;
+    use Auditable;
 
     protected $fillable = [
         'employee_id',

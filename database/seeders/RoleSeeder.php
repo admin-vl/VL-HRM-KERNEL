@@ -648,7 +648,8 @@ class RoleSeeder extends Seeder
             'view-payslips',
             'create-payslips',
             'download-payslips',
-            'send-payslips'
+            'send-payslips',
+            'view-audit'
         ];
 
         // Add SaaS-specific permissions

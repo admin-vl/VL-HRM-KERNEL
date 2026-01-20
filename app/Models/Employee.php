@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class Employee extends Model
+class Employee extends Model implements AuditableContract
 {
     use HasFactory;
+    use Auditable;
 
     protected $fillable = [
         'user_id',
@@ -101,11 +104,11 @@ class Employee extends Model
      */
     public function documents()
     {
-        return $this->hasMany(EmployeeDocument::class,'employee_id','user_id');
+        return $this->hasMany(EmployeeDocument::class, 'employee_id', 'user_id');
     }
 
     public function employee_salary()
     {
-        return $this->hasOne(EmployeeSalary::class,'employee_id','user_id');
+        return $this->hasOne(EmployeeSalary::class, 'employee_id', 'user_id');
     }
 }

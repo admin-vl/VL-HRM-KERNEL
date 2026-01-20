@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class Plan extends Model
+class Plan extends Model implements AuditableContract
 {
+    use Auditable;
+
     protected $fillable = [
         'name',
         'price',
@@ -21,7 +25,7 @@ class Plan extends Model
         'is_plan_enable',
         'is_default',
     ];
-    
+
     protected $casts = [
         'is_default' => 'boolean',
         'price' => 'float',
@@ -30,7 +34,7 @@ class Plan extends Model
         'max_employees' => 'integer',
         'trial_day' => 'integer',
     ];
-    
+
     /**
      * Get the default plan
      *
@@ -43,7 +47,7 @@ class Plan extends Model
         }
         return self::where('is_default', true)->first();
     }
-    
+
     /**
      * Check if the plan is the default plan
      *
@@ -53,7 +57,7 @@ class Plan extends Model
     {
         return (bool) $this->is_default;
     }
-    
+
     /**
      * Get the price based on billing cycle
      *
@@ -65,10 +69,10 @@ class Plan extends Model
         if ($cycle === 'yearly' && $this->yearly_price) {
             return $this->yearly_price;
         }
-        
+
         return $this->price;
     }
-    
+
     /**
      * Get users subscribed to this plan
      */

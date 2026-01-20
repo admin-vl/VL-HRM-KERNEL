@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class MonthlySalarySettlement extends Model
+class MonthlySalarySettlement extends Model implements AuditableContract
 {
+    use Auditable;
+
     protected $fillable = [
         'employee_id',
         'year',

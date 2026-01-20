@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class EmployeeInfo extends Model
+class EmployeeInfo extends Model implements AuditableContract
 {
-
+    use Auditable;
+    
     protected $fillable = [
         'user_id',
         'title',

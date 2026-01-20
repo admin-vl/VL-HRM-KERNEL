@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class Coupon extends Model
+class Coupon extends Model implements AuditableContract
 {
+    use Auditable;
+    
     protected $fillable = [
         'name',
         'type',

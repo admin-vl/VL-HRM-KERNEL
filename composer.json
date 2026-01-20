@@ -26,6 +26,7 @@
         "mercadopago/dx-php": "^2.5",
         "mollie/mollie-api-php": "^3.1",
         "openai-php/client": "^0.14.0",
+        "owen-it/laravel-auditing": "^14.0",
         "paytabscom/laravel_paytabs": "^1.9",
         "phpoffice/phpword": "^1.4",
         "rachidlaasri/laravel-installer": "^4.1",

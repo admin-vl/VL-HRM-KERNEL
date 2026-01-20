@@ -45,7 +45,7 @@ class RoleController extends BaseController
         
         // Get allowed modules for current user role
         $allowedModules = config('role-permissions.' . $userType, config('role-permissions.company'));        
-        
+        // dd(config('role-permissions.company'));
         // Filter permissions by allowed modules
         $query = Permission::whereIn('module', $allowedModules);
         

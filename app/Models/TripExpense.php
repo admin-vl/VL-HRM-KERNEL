@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
 
-class TripExpense extends Model
+class TripExpense extends Model implements AuditableContract
 {
     use HasFactory;
+    use Auditable;
 
     protected $fillable = [
         'trip_id',
