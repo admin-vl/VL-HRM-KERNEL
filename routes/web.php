@@ -84,6 +84,7 @@ use App\Http\Controllers\GoalTypeController;
 use App\Http\Controllers\EmployeeGoalController;
 use App\Http\Controllers\ReviewCycleController;
 use App\Http\Controllers\EmployeeReviewController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -159,8 +160,8 @@ Route::get('email-templates', [\App\Http\Controllers\EmailTemplateController::cl
 Route::get('email-templates/{emailTemplate}', [\App\Http\Controllers\EmailTemplateController::class, 'show'])->name('email-templates.show');
 Route::put('email-templates/{emailTemplate}/settings', [\App\Http\Controllers\EmailTemplateController::class, 'updateSettings'])->name('email-templates.update-settings');
 Route::put('email-templates/{emailTemplate}/content', [\App\Http\Controllers\EmailTemplateController::class, 'updateContent'])->name('email-templates.update-content');
-Route::get('global-search', [GlobalSearchController ::class, 'search'])
-->name('global.search');
+Route::get('global-search', [GlobalSearchController::class, 'search'])
+    ->name('global.search');
 
 Route::middleware(['auth', 'verified', 'setting'])->group(function () {
 
@@ -316,10 +317,6 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             // Additional user routes
             Route::put('users/{user}/reset-password', [UserController::class, 'resetPassword'])->middleware('permission:reset-password-users')->name('users.reset-password');
             Route::put('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->middleware('permission:toggle-status-users')->name('users.toggle-status');
-        });
-
-        Route::middleware('permission:view-audit')->group(function () {
-            Route::get('audits', [AuditController::class, 'index'])->name('audits.index');
         });
 
         // HR Module routes
@@ -1122,7 +1119,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         })->name('plan-requests.index');
 
         // Companies routes
-        Route::middleware(['checksaas','permission:manage-companies'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-companies'])->group(function () {
             Route::get('companies', [CompanyController::class, 'index'])->middleware('permission:manage-companies')->name('companies.index');
             Route::get('companies/create', [CompanyController::class, 'create'])->middleware('permission:manage-companies')->name('companies.create');
             Route::post('companies', [CompanyController::class, 'store'])->middleware('permission:create-companies')->name('companies.store');
@@ -1137,7 +1134,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
 
 
         // Coupons routes
-        Route::middleware(['checksaas','permission:manage-coupons'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-coupons'])->group(function () {
             Route::get('coupons', [CouponController::class, 'index'])->middleware('permission:manage-coupons')->name('coupons.index');
             Route::get('coupons/{coupon}', [CouponController::class, 'show'])->middleware('permission:view-coupons')->name('coupons.show');
             Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:create-coupons')->name('coupons.store');
@@ -1147,7 +1144,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         });
 
         // Plan Requests routes
-        Route::middleware(['checksaas','permission:manage-plan-requests'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-plan-requests'])->group(function () {
             Route::get('plan-requests', [PlanRequestController::class, 'index'])->middleware('permission:manage-plan-requests')->name('plan-requests.index');
             Route::post('plan-requests/{planRequest}/approve', [PlanRequestController::class, 'approve'])->middleware('permission:approve-plan-requests')->name('plan-requests.approve');
             Route::post('plan-requests/{planRequest}/reject', [PlanRequestController::class, 'reject'])->middleware('permission:reject-plan-requests')->name('plan-requests.reject');
@@ -1156,7 +1153,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
 
 
         // Referral routes
-        Route::middleware(['checksaas','permission:manage-referral'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-referral'])->group(function () {
             Route::get('referral', [ReferralController::class, 'index'])->middleware('permission:manage-referral')->name('referral.index');
             Route::get('referral/referred-users', [ReferralController::class, 'getReferredUsers'])->middleware('permission:manage-users-referral')->name('referral.referred-users');
             Route::post('referral/settings', [ReferralController::class, 'updateSettings'])->middleware('permission:manage-setting-referral')->name('referral.settings.update');
@@ -1198,6 +1195,20 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         Route::middleware('permission:view-calendar')->group(function () {
             Route::get('calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
         });
+
+        // Audit Route
+        Route::middleware('permission:view-audit')->group(function () {
+            Route::get('audits', [AuditController::class, 'index'])->name('audits.index');
+        });
+
+        Route::get('/reports/salary-register', [ReportController::class, 'salaryRegister'])->name('reports.salary-register');
+        Route::get('/reports/itax', [ReportController::class, 'itax'])->name('reports.itax');
+        Route::get('/reports/netpay', [ReportController::class, 'netpay'])->name('reports.netpay');
+        Route::get('/reports/pf', [ReportController::class, 'pf'])->name('reports.pf');
+        Route::get('/reports/esi', [ReportController::class, 'esi'])->name('reports.esi');
+        Route::get('/reports/lwf', [ReportController::class, 'lwf'])->name('reports.lwf');
+        Route::get('/reports/ptax', [ReportController::class, 'ptax'])->name('reports.ptax');
+        Route::get('/reports/salary', [ReportController::class, 'salary'])->name('reports.salary');
 
         // Impersonation routes
         Route::middleware('App\Http\Middleware\SuperAdminMiddleware')->group(function () {

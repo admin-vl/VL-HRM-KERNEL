@@ -843,28 +843,70 @@ export function AppSidebar() {
         // Contract Management as separate menu
         const reportChildren = [];
 
-        if (hasPermission(permissions, 'manage-contract-types')) {
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
             reportChildren.push({
                 title: t('Salary Register'),
-                href: '#',
+                href: route('reports.salary-register'),
             });
         }
 
-        if (hasPermission(permissions, 'manage-employee-contracts')) {
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
             reportChildren.push({
-                title: t('Monthly Payslips'),
-                href: '#',
+                title: t('ITax Statement'),
+                href: route('reports.itax'),
             });
         }
 
-        if (hasPermission(permissions, 'manage-contract-renewals')) {
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
             reportChildren.push({
-                title: t('Head Count Report'),
-                href: '#',
+                title: t('Net Pay Advice'),
+                href: route('reports.netpay'),
             });
         }
 
-        if (hasPermission(permissions, 'manage-contract-templates')) {
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
+            reportChildren.push({
+                title: t('PF Statement'),
+                href: route('reports.pf'),
+            });
+        }
+
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
+            reportChildren.push({
+                title: t('ESI Statement'),
+                href: route('reports.esi'),
+            });
+        }
+
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
+            reportChildren.push({
+                title: t('LWF Statement'),
+                href: route('reports.lwf'),
+            });
+        }
+
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
+            reportChildren.push({
+                title: t('PTax Statement'),
+                href: route('reports.ptax'),
+            });
+        }
+
+        if (hasPermission(permissions, 'manage-employee-salaries')) {
+            reportChildren.push({
+                title: t('Salary'),
+                href: route('reports.salary'),
+            });
+        }
+
+        // if (hasPermission(permissions, 'manage-contract-renewals')) {
+        //     reportChildren.push({
+        //         title: t('Head Count Report'),
+        //         href: '#',
+        //     });
+        // }
+
+        /*if (hasPermission(permissions, 'manage-contract-templates')) {
             reportChildren.push({
                 title: t('All Compliance Report'),
                 href: '#',
@@ -911,7 +953,7 @@ export function AppSidebar() {
                 title: t('TDS Quarterly Return Data'),
                 href: '#',
             });
-        }
+        }*/
 
         if (reportChildren.length > 0) {
             items.push({
