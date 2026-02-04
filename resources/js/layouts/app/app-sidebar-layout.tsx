@@ -6,30 +6,14 @@ import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 
-export default function AppSidebarLayout({
-    children,
-    breadcrumbs = [],
-}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
     return (
         <AppShell variant="sidebar">
-            {/* Column layout */}
-            <div className="flex min-h-screen flex-col">
-                {/* Row: sidebar + content */}
-                <div className="flex flex-1">
-                    <AppSidebar />
-
-                    <AppContent variant="sidebar" className="flex flex-col">
-                        <AppSidebarHeader breadcrumbs={breadcrumbs} />
-
-                        <main className="flex-1">
-                            {children}
-                        </main>
-                    </AppContent>
-                </div>
-
-                {/* Full-width footer */}
-                <AppFooter />
-            </div>
+            <AppSidebar />
+            <AppContent variant="sidebar">
+                <AppSidebarHeader breadcrumbs={breadcrumbs} />
+                {children}
+            </AppContent>
         </AppShell>
     );
 }
