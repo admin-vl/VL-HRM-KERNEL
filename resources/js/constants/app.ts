@@ -1,0 +1,1 @@
+export const DEVELOPED_BY = "VL";

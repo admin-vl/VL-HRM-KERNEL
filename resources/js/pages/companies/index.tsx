@@ -13,7 +13,7 @@ import { UpgradePlanModal } from '@/components/UpgradePlanModal';
 import { useInitials } from '@/hooks/use-initials';
 import { router, usePage } from '@inertiajs/react';
 import { ArrowUpRight, CreditCard, Edit, Eye, Info, KeyRound, Lock, Plus, Trash2, Unlock } from 'lucide-react';
-import {useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function Companies() {
@@ -39,7 +39,7 @@ export default function Companies() {
     const [currentCompany, setCurrentCompany] = useState<any>(null);
     const [availablePlans, setAvailablePlans] = useState<any[]>([]);
 
-  const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+    const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
 
     // Check if any filters are active
     const hasActiveFilters = () => {
@@ -378,10 +378,10 @@ export default function Companies() {
             onClick: () => router.visit(route('companies.create')),
         },
         {
-          label: t('Quick Add'),
-          icon: <Plus className="h-4 w-4 mr-2" />,
-          variant: 'default',
-          onClick: () => handleAddNew()
+            label: t('Quick Add'),
+            icon: <Plus className="h-4 w-4 mr-2" />,
+            variant: 'default',
+            onClick: () => handleAddNew()
         }
     ];
 
@@ -679,18 +679,20 @@ export default function Companies() {
                                 {/* Header */}
                                 <div className="p-6">
                                     <div className="mb-4 flex items-start justify-between">
-                                        <div className="flex items-start space-x-4">
-                                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-lg font-bold text-gray-700">
+                                        <div className="flex items-start space-x-4 w-[99%]">
+                                            <div className="flex h-13 w-13 items-center justify-center rounded-full bg-gray-200 text-lg font-bold text-gray-700">
                                                 {getInitials(company.name)}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <h3 className="mb-2 text-lg font-bold text-gray-900">{company.name}</h3>
-                                                <p className="mb-3 text-sm text-gray-600">{company.email}</p>
+                                                {/* <p className="mb-3 text-sm text-gray-600">{company.email}</p> */}
+                                                <p className="mb-3 text-sm text-gray-600 break-words">
+                                                    {company.email}
+                                                </p>
                                                 <div className="flex items-center">
                                                     <div
-                                                        className={`mr-2 h-2 w-2 rounded-full ${
-                                                            company.status === 'active' ? 'bg-gray-800' : 'bg-gray-400'
-                                                        }`}
+                                                        className={`mr-2 h-2 w-2 rounded-full ${company.status === 'active' ? 'bg-gray-800' : 'bg-gray-400'
+                                                            }`}
                                                     ></div>
                                                     <span className="text-sm font-medium text-gray-700">
                                                         {company.status === 'active' ? t('Active') : t('Inactive')}
@@ -795,8 +797,8 @@ export default function Companies() {
                                             onClick={() => handleAction('edit', company)}
                                             className="h-9 flex-1 border-gray-300 text-sm"
                                         >
-                                            <Edit className="mr-2 h-4 w-4" />
-                                            {t('Edit')}
+                                            <Edit className="h-4 w-4" />
+                                            {/* {t('Edit')} */}
                                         </Button>
 
                                         <Button
@@ -805,8 +807,8 @@ export default function Companies() {
                                             onClick={() => handleAction('company-info', company)}
                                             className="h-9 flex-1 border-gray-300 text-sm"
                                         >
-                                            <Eye className="mr-2 h-4 w-4" />
-                                            {t('View')}
+                                            <Eye className="h-4 w-4" />
+                                            {/* {t('View')} */}
                                         </Button>
 
                                         <Button
@@ -815,8 +817,8 @@ export default function Companies() {
                                             onClick={() => handleAction('delete', company)}
                                             className="h-9 flex-1 border-gray-300 text-sm text-gray-700"
                                         >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            {t('Delete')}
+                                            <Trash2 className="h-4 w-4" />
+                                            {/* {t('Delete')} */}
                                         </Button>
                                     </div>
                                 </div>
@@ -882,9 +884,11 @@ export default function Companies() {
                         /* =============================
        SIGNATORY DETAILS SECTION
     ============================== */
-                        { name: 'signatory_details', type: 'custom', label: (  <span className="font-bold">
-            {t('Signatory Details of Authorised Person')}
-        </span>), },
+                        {
+                            name: 'signatory_details', type: 'custom', label: (<span className="font-bold">
+                                {t('Signatory Details of Authorised Person')}
+                            </span>),
+                        },
 
                         { name: 'sign_name', label: t('Name'), type: 'text', required: true },
                         { name: 'sign_designation', label: t('Designation'), type: 'text' },

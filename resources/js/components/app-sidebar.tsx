@@ -1,5 +1,6 @@
 import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
+import { DEVELOPED_BY } from '@/constants/app';
 import { useBrand } from '@/contexts/BrandContext';
 import { useLayout } from '@/contexts/LayoutContext';
 import { useSidebarSettings } from '@/contexts/SidebarContext';
@@ -1155,7 +1156,15 @@ export function AppSidebar() {
 
             <SidebarFooter>
                 <h5 className="text-md flex items-center gap-2 font-semibold tracking-tight">
-                    © 2025 <span style={{ color: '#36aaa4' }}>VL HRM</span>
+                    © Crafted By <span style={{ color: '#36aaa4' }}>
+                        <a
+                            href={route('home')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {DEVELOPED_BY}
+                        </a>
+                    </span>
                 </h5>
                 {/* <NavFooter items={footerNavItems} className="mt-auto" position={position} /> */}
                 {/* Profile menu moved to header */}
