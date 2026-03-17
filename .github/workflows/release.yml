@@ -1,0 +1,185 @@
+name: Deploy to BigRock Shared Hosting
+
+on:
+  push:
+    branches:
+      - 'main' # Trigger on main branch for push events
+  pull_request:
+    branches:
+      - main # Trigger only for PRs to main branch
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+# # Ensure only one workflow runs per branch/PR at a time
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+#   cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Runs only on main branch
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+      # 🔹 PLACE MYSQL SERVICE HERE
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel
+          MYSQL_USER: laravel
+          MYSQL_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Verify directory structure
+        run: |
+          ls -la
+
+      # ✅ Laravel build environment (ROOT project now)
+      - name: Setup Laravel environment
+        run: |
+          mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views
+          touch .env
+
+          echo "APP_NAME=Laravel" >> .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_DATABASE=laravel" >> .env
+          echo "DB_USERNAME=laravel" >> .env
+          echo "DB_PASSWORD=secret" >> .env
+
+          echo "CACHE_STORE=file" >> .env
+          echo "SESSION_DRIVER=file" >> .env
+
+      - name: Install composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Setup temporary database for build
+        run: php artisan migrate --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node Dependencies and Build
+        run: |
+          npm install
+          npm run build
+
+      # - name: Optimize Laravel for production
+      #   run: |
+      #     php artisan config:cache
+      #     php artisan route:cache
+      #     php artisan view:cache
+
+      # ✅ Cleanup before upload
+      - name: Clean upload folder
+        run: |
+          rm -rf node_modules
+          rm -rf database/database.sqlite
+          rm -rf .env
+          rm -rf tests
+          rm -rf .editorconfig
+          rm -rf phpunit.xml
+          rm -rf vite.config.js
+          rm -rf package.json
+          rm -rf package-lock.json
+          rm -rf .git .github
+          find storage -type f ! -name '.gitignore' -delete
+
+      - name: Create test file
+        run: echo "Deployment Success" > deployment_test.txt
+
+      # ✅ FTP DEPLOY → SUBFOLDER ON SERVER
+      - name: Upload files to BigRock via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          local-dir: ./
+          server-dir: ./
+          timeout: 600000
+          log-level: verbose
+          dangerous-clean-slate: false
+          security: loose
+          exclude: |
+            **/vendor/**
+            **/node_modules/**
+            **/tests/**
+            **/.github/**
+
+  semantic-release:
+    # Currently this is skipped for PRs, since deploy job is skipped. ToDo, refactor deploy job.
+    needs: deploy
+    # Rules:
+    # 1. For a PR, run the job
+    # 2. For main branch push, run the job
+    if: |
+      (github.event_name == 'pull_request' && github.base_ref == 'main') || 
+      github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "v24.12.0" # nodejs LTS version
+          cache: 'npm' # Optimized built-in caching for v4
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Configure Git
+        # Rule: Only for actual release on main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Semantic Release
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            npx semantic-release --dry-run
+          else
+            npx semantic-release
+          fi
+        env:
+          # Preconfigured GitHub token for authentication, you don’t need to manually create this.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

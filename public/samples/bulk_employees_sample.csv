@@ -1,0 +1,3 @@
+name,email,employee_id,phone,date_of_birth,gender
+John Doe,john.doe@example.com,EMP001,1234567890,13-12-2006,male
+Test1,test1@gmail.com,EMP002,9638521470,25-05-2003,female

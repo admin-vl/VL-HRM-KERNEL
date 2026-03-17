@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use OwenIt\Auditing\Auditable;
+
+class SalaryComponent extends BaseModel implements AuditableContract
+{
+    use HasFactory;
+    use Auditable;
+
+    protected $fillable = [
+        'name',
+        'description',
+        'type',
+        'recurring_type',
+        'calculation_type',
+        'default_amount',
+        'percentage_of_basic',
+        'is_taxable',
+        'is_mandatory',
+        'status',
+        'created_by'
+    ];
+
+    protected $casts = [
+        'default_amount' => 'decimal:2',
+        'percentage_of_basic' => 'decimal:2',
+        'is_taxable' => 'boolean',
+        'is_mandatory' => 'boolean',
+    ];
+
+    /**
+     * Get the user who created the component.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Calculate component amount based on basic salary.
+     */
+    public function calculateAmount($basicSalary = 0)
+    {
+        if ($this->calculation_type === 'percentage' && $this->percentage_of_basic) {
+            return ($basicSalary * $this->percentage_of_basic) / 100;
+        }
+        
+        return $this->default_amount;
+    }
+
+    public function reviceCalculateAmount($basicSalary = 0, $calculation_type = "", $amout = 0)
+    {
+        if ($calculation_type === 'percentage') {
+            return ($basicSalary * $amout) / 100;
+        }
+        
+        return $amout;
+    }
+
+    /**
+     * Get earnings components.
+     */
+    public static function getEarnings()
+    {
+        return static::where('type', 'earning')
+            ->where('status', 'active')
+            ->get();
+    }
+
+    /**
+     * Get deductions components.
+     */
+    public static function getDeductions()
+    {
+        return static::where('type', 'deduction')
+            ->where('status', 'active')
+            ->get();
+    }
+}
