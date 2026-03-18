@@ -136,10 +136,7 @@ export default function SalaryRegister() {
     },
     {
       key: 'name',
-      label: t('Employee'),
-      render: (value: string, row: any) => {
-        return row?.user?.name
-      }
+      label: t('Employee')
     },
     {
       key: 'date_of_joining',
@@ -147,7 +144,7 @@ export default function SalaryRegister() {
       sortable: true
     },
     {
-      key: 'date_of+birth',
+      key: 'date_of_birth',
       label: t('DOB'),
       // render: (value: string, row: any) => {
       //   const contact = [];
@@ -178,7 +175,7 @@ export default function SalaryRegister() {
       label: t('Bank Name'),
     },
     {
-      key: 'bank_acc_no',
+      key: 'account_number',
       label: t('Bank Acc No'),
     },
     {
@@ -186,15 +183,18 @@ export default function SalaryRegister() {
       label: t('PAN'),
     },
     {
-      key: 'lop_days',
+      key: 'unpaid_leave_days',
       label: t('LOP Days'),
     },
     {
       key: 'paid_days',
       label: t('Paid Days'),
+      render: (value: string, row: any) => {
+        return row.working_days - row.unpaid_leave_days;
+      }
     },
     {
-      key: 'basic',
+      key: 'basic_salary',
       label: t('Basic'),
     },
     {
@@ -290,7 +290,7 @@ export default function SalaryRegister() {
       label: t('Dividend'),
     },
     {
-      key: 'hra',
+      key: 'gross_pay',
       label: t('Gross Total'),
     },
     {
@@ -362,11 +362,11 @@ export default function SalaryRegister() {
       label: t('Welfare Deduction'),
     },
     {
-      key: 'hra',
+      key: 'total_deductions',
       label: t('Gross Deduction'),
     },
     {
-      key: 'hra',
+      key: 'net_pay',
       label: t('Net Salary'),
     },
     {
