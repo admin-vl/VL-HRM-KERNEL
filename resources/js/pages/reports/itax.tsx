@@ -135,10 +135,7 @@ export default function ReportItax() {
     },
     {
       key: 'name',
-      label: t('Name'),
-      render: (value: string, row: any) => {
-        return row?.user?.name
-      }
+      label: t('Name')
     },
     {
       key: 'itax',

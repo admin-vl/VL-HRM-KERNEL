@@ -130,11 +130,8 @@ export default function ReportPf() {
       label: t('Emp Code')
     },
     {
-      key: 'user_name',
-      label: t('Name'),
-      render: (value: string, row: any) => {
-        return row?.user?.name
-      }
+      key: 'name',
+      label: t('Name')
     },
     {
       key: 'event',
@@ -156,12 +153,12 @@ export default function ReportPf() {
       key: 'basic_salary',
       label: t('Basic Salary'),
     },
+    // {
+    //   key: 'personal_salary',
+    //   label: t('Basic Salary'),
+    // },
     {
-      key: 'personal_salary',
-      label: t('Basic Salary'),
-    },
-    {
-      key: 'epf',
+      key: 'pf',
       label: t('EPF'),
     },
     {
