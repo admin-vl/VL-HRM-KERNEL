@@ -3,7 +3,6 @@
 
 # Laravel Environment
 .env
-.env.*
 /storage/*.key
 
 # Laravel Storage
