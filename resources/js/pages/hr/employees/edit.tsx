@@ -272,8 +272,8 @@ export default function EmployeeEdit() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('HR Management'), href: route('hr.employees.index') },
-    { title: t('Employees'), href: route('hr.employees.index') },
-    { title: t('Edit Employee') }
+    { title: t('Employees'), href: route('hr.employees.index') }
+    // { title: t('Edit Employee') }
   ];
 
   return (
@@ -424,7 +424,7 @@ export default function EmployeeEdit() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="physical_status">{t('Mother Name')} <span className="text-red-500">*</span></Label>
+                <Label htmlFor="physical_status">{t('Physical Status')} <span className="text-red-500">*</span></Label>
                 <Input
                   id="physical_status"
                   value={formData.physical_status}
